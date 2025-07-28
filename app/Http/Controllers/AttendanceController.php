@@ -24,9 +24,15 @@ class AttendanceController extends Controller
         // Tampilan untuk Admin
         if ($user->role === 'admin') {
             $today = Carbon::now()->dayOfWeekIso;
-            $schedulesToday = Schedule::with(['user', 'subject', 'classroom'])
-                ->where('day_of_week', $today)
-                ->orderBy('start_time', 'asc')
+
+            // =================================================================
+            // PERBAIKAN DI SINI: Gunakan JOIN untuk sorting berdasarkan TimeSlot
+            // =================================================================
+            $schedulesToday = Schedule::with(['user', 'subject', 'classroom', 'timeSlot'])
+                ->join('time_slots', 'schedules.time_slot_id', '=', 'time_slots.id')
+                ->where('schedules.day_of_week', $today)
+                ->orderBy('time_slots.start_time', 'asc')
+                ->select('schedules.*') // Penting: Pilih semua kolom dari schedules
                 ->get();
             
             // Ambil data absensi hari ini
@@ -36,7 +42,7 @@ class AttendanceController extends Controller
             $schedulesToday->map(function ($schedule) use ($attendancesToday) {
                 $attendanceRecord = $attendancesToday->firstWhere('schedule_id', $schedule->id);
                 $schedule->attendance_status = $attendanceRecord->status ?? null;
-                $schedule->attendance_remarks = $attendanceRecord->remarks ?? null; // <-- Kirim keterangan yang sudah ada
+                $schedule->attendance_remarks = $attendanceRecord->remarks ?? null;
                 return $schedule;
             });
 
@@ -48,14 +54,18 @@ class AttendanceController extends Controller
 
         // Tampilan untuk Guru
         if ($user->role === 'guru') {
-            $schedules = Schedule::with(['subject', 'classroom'])
+            $schedules = Schedule::with(['subject', 'classroom', 'timeSlot'])
                 ->where('user_id', $user->id)
-                ->orderBy('day_of_week')->orderBy('start_time')->get()->groupBy('day_of_week');
+                ->get()
+                ->sortBy(['day_of_week', 'timeSlot.start_time']);
+
             $summary = Attendance::where('user_id', $user->id)
                 ->select('status', DB::raw('count(*) as total'))
                 ->groupBy('status')->get()->pluck('total', 'status');
+                
             $history = Attendance::where('user_id', $user->id)
                 ->latest('attendance_date')->take(10)->get();
+                
             return view('dashboard', compact('schedules', 'summary', 'history'));
         }
 
@@ -73,10 +83,9 @@ class AttendanceController extends Controller
         $request->validate([
             'schedule_id' => 'required|exists:schedules,id',
             'status' => 'required|in:hadir,sakit,izin,alpa',
-            'remarks' => 'nullable|string|max:255', // Validasi untuk keterangan
+            'remarks' => 'nullable|string|max:255',
         ]);
 
-        // Gunakan findOrFail untuk keamanan. Akan menampilkan 404 jika tidak ditemukan.
         $schedule = Schedule::findOrFail($request->schedule_id);
 
         Attendance::updateOrCreate(

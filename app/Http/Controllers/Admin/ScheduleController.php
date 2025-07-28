@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Admin/ScheduleController.php
 
 namespace App\Http\Controllers\Admin;
 
@@ -8,99 +7,88 @@ use App\Models\Schedule;
 use App\Models\User;
 use App\Models\Subject;
 use App\Models\Classroom;
+use App\Models\TimeSlot;
 use Illuminate\Http\Request;
 
 class ScheduleController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     * Menampilkan daftar semua jadwal.
+     * Menampilkan daftar semua jadwal dengan paginasi.
      */
     public function index()
     {
-        // Eager load relasi untuk menghindari N+1 query problem
-        $schedules = Schedule::with(['user', 'subject', 'classroom'])
-            ->orderBy('day_of_week')
-            ->orderBy('start_time')
-            ->paginate(10);
+        // PERBAIKAN: Gunakan join untuk sorting dan paginate untuk paginasi
+        $schedules = Schedule::with(['user', 'subject', 'classroom', 'timeSlot'])
+            ->join('time_slots', 'schedules.time_slot_id', '=', 'time_slots.id')
+            ->orderBy('schedules.day_of_week', 'asc')
+            ->orderBy('time_slots.start_time', 'asc')
+            ->select('schedules.*') // Hindari ambiguitas kolom
+            ->paginate(10); // Gunakan paginate() bukan get()
             
         return view('admin.schedules.index', compact('schedules'));
     }
 
     /**
-     * Show the form for creating a new resource.
      * Menampilkan form untuk membuat jadwal baru.
      */
     public function create()
     {
-        // Ambil semua data yang dibutuhkan untuk dropdown di form
         $teachers = User::where('role', 'guru')->orderBy('name')->get();
         $subjects = Subject::orderBy('name')->get();
         $classrooms = Classroom::orderBy('name')->get();
+        $timeSlots = TimeSlot::orderBy('lesson_number')->get();
 
-        return view('admin.schedules.create', compact('teachers', 'subjects', 'classrooms'));
+        return view('admin.schedules.create', compact('teachers', 'subjects', 'classrooms', 'timeSlots'));
     }
 
     /**
-     * Store a newly created resource in storage.
      * Menyimpan jadwal baru ke database.
      */
     public function store(Request $request)
     {
-        // Validasi input
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'subject_id' => 'required|exists:subjects,id',
             'classroom_id' => 'required|exists:classrooms,id',
             'day_of_week' => 'required|integer|between:1,7',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'time_slot_id' => 'required|exists:time_slots,id',
         ]);
 
-        // Buat jadwal baru
         Schedule::create($request->all());
-
         return redirect()->route('admin.schedules.index')->with('success', 'Jadwal berhasil dibuat.');
     }
 
     /**
-     * Show the form for editing the specified resource.
      * Menampilkan form untuk mengedit jadwal.
      */
     public function edit(Schedule $schedule)
     {
-        // Ambil semua data yang dibutuhkan untuk dropdown di form edit
         $teachers = User::where('role', 'guru')->orderBy('name')->get();
         $subjects = Subject::orderBy('name')->get();
         $classrooms = Classroom::orderBy('name')->get();
+        $timeSlots = TimeSlot::orderBy('lesson_number')->get();
 
-        return view('admin.schedules.edit', compact('schedule', 'teachers', 'subjects', 'classrooms'));
+        return view('admin.schedules.edit', compact('schedule', 'teachers', 'subjects', 'classrooms', 'timeSlots'));
     }
 
     /**
-     * Update the specified resource in storage.
      * Memperbarui data jadwal di database.
      */
     public function update(Request $request, Schedule $schedule)
     {
-        // Validasi input
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'subject_id' => 'required|exists:subjects,id',
             'classroom_id' => 'required|exists:classrooms,id',
             'day_of_week' => 'required|integer|between:1,7',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'time_slot_id' => 'required|exists:time_slots,id',
         ]);
 
-        // Update jadwal
         $schedule->update($request->all());
-
         return redirect()->route('admin.schedules.index')->with('success', 'Jadwal berhasil diperbarui.');
     }
 
     /**
-     * Remove the specified resource from storage.
      * Menghapus data jadwal dari database.
      */
     public function destroy(Schedule $schedule)

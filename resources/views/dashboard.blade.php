@@ -40,8 +40,7 @@
                                <tbody>
                                    @forelse ($schedules as $schedule)
                                        <tr class="hover:bg-gray-50">
-                                           <td class="py-2 px-4 border-b text-center">{{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}</td>
-                                           <td class="py-2 px-4 border-b">{{ $schedule->subject->name }}</td>
+										   <td class="py-2 px-4 border-b text-center">{{ \Carbon\Carbon::parse($schedule->timeSlot->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->timeSlot->end_time)->format('H:i') }}</td>                                           <td class="py-2 px-4 border-b">{{ $schedule->subject->name }}</td>
                                            <td class="py-2 px-4 border-b">{{ $schedule->user->name }}</td>
                                            <td class="py-2 px-4 border-b text-center">{{ $schedule->classroom->name }}</td>
                                            <td class="py-2 px-4 border-b align-top">

@@ -64,19 +64,18 @@
                                 <x-input-error :messages="$errors->get('day_of_week')" class="mt-2" />
                             </div>
 
-                            <!-- Jam Mulai -->
-                            <div>
-                                <x-input-label for="start_time" :value="__('Jam Mulai')" />
-                                <x-text-input id="start_time" class="block mt-1 w-full" type="time" name="start_time" :value="old('start_time')" required />
-                                <x-input-error :messages="$errors->get('start_time')" class="mt-2" />
-                            </div>
-
-                            <!-- Jam Selesai -->
-                            <div>
-                                <x-input-label for="end_time" :value="__('Jam Selesai')" />
-                                <x-text-input id="end_time" class="block mt-1 w-full" type="time" name="end_time" :value="old('end_time')" required />
-                                <x-input-error :messages="$errors->get('end_time')" class="mt-2" />
-                            </div>
+							<div>
+    							<x-input-label for="time_slot_id" :value="__('Jam Pelajaran')" />
+    							<select name="time_slot_id" id="time_slot_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+        							<option value="">Pilih Jam Pelajaran</option>
+        							@foreach($timeSlots as $slot)
+            							<option value="{{ $slot->id }}">
+                							Jam ke-{{ $slot->lesson_number }} ({{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($slot->end_time)->format('H:i') }})
+            							</option>
+        							@endforeach
+    							</select>
+    							<x-input-error :messages="$errors->get('time_slot_id')" class="mt-2" />
+							</div>
                         </div>
 
                         <div class="flex items-center justify-end mt-6">

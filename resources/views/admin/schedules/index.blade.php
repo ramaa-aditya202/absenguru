@@ -38,8 +38,7 @@ $days = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6
                                 @forelse ($schedules as $schedule)
                                     <tr class="hover:bg-gray-50">
                                         <td class="py-2 px-4 border-b">{{ $days[$schedule->day_of_week] ?? 'N/A' }}</td>
-                                        <td class="py-2 px-4 border-b">{{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}</td>
-                                        <td class="py-2 px-4 border-b">{{ $schedule->subject->name }}</td>
+										<td class="py-2 px-4 border-b">{{ \Carbon\Carbon::parse($schedule->timeSlot->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->timeSlot->end_time)->format('H:i') }}</td>                                        <td class="py-2 px-4 border-b">{{ $schedule->subject->name }}</td>
                                         <td class="py-2 px-4 border-b">{{ $schedule->user->name }}</td>
                                         <td class="py-2 px-4 border-b">{{ $schedule->classroom->name }}</td>
                                         <td class="py-2 px-4 border-b text-center">
