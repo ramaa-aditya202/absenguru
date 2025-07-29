@@ -1,3 +1,18 @@
+@php
+    // Fungsi helper untuk membuat link sorting, hanya didefinisikan jika user adalah admin
+    if (Auth::check() && Auth::user()->role == 'admin') {
+        function sortable_dashboard_link($column, $title, $currentSort, $currentDirection) {
+            $newDirection = ($currentSort == $column && $currentDirection == 'asc') ? 'desc' : 'asc';
+            // Gabungkan parameter filter yang ada dengan parameter sorting baru
+            $queryParams = array_merge(request()->except('sort', 'direction'), ['sort' => $column, 'direction' => $newDirection]);
+            return '<a href="' . route('dashboard', $queryParams) . '" class="inline-flex items-center">
+                        '.$title.'
+                        <x-sort-icon :sort="$currentSort" :direction="$currentDirection" :field="$column" />
+                    </a>';
+        }
+    }
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -23,29 +38,68 @@
                         {{-- ================================= --}}
                         {{-- Tampilan untuk Pengguna Admin --}}
                         {{-- ================================= --}}
+
+                        <!-- Panel Filter Lanjutan -->
+                        <div class="mb-6 p-4 bg-gray-50 border rounded-lg">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Filter Jadwal</h3>
+                            <form method="GET" action="{{ route('dashboard') }}">
+                                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                                    <!-- Filter Tanggal -->
+                                    <div>
+                                        <x-input-label for="date" :value="__('Tanggal')" />
+                                        <x-text-input id="date" class="block mt-1 w-full" type="date" name="date" :value="$selectedDateValue" />
+                                    </div>
+                                    <!-- Filter Jam Pelajaran -->
+                                    <div>
+                                        <x-input-label for="time_slot_id" :value="__('Jam Pelajaran')" />
+                                        <select name="time_slot_id" id="time_slot_id" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm">
+                                            <option value="">Semua Jam</option>
+                                            @foreach($timeSlots as $slot)
+                                                <option value="{{ $slot->id }}" @if(request('time_slot_id') == $slot->id) selected @endif>Jam ke-{{ $slot->lesson_number }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <!-- Filter Guru -->
+                                    <div>
+                                        <x-input-label for="user_id" :value="__('Guru')" />
+                                        <select name="user_id" id="user_id" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm">
+                                            <option value="">Semua Guru</option>
+                                            @foreach($teachers as $teacher)
+                                                <option value="{{ $teacher->id }}" @if(request('user_id') == $teacher->id) selected @endif>{{ $teacher->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <!-- Filter Kelas -->
+                                    <div>
+                                        <x-input-label for="classroom_id" :value="__('Kelas')" />
+                                        <select name="classroom_id" id="classroom_id" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm">
+                                            <option value="">Semua Kelas</option>
+                                            @foreach($classrooms as $classroom)
+                                                <option value="{{ $classroom->id }}" @if(request('classroom_id') == $classroom->id) selected @endif>{{ $classroom->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <!-- Tombol Aksi -->
+                                    <div class="flex items-end space-x-2">
+                                        <x-primary-button class="w-full justify-center">Terapkan</x-primary-button>
+                                        <a href="{{ route('dashboard') }}" class="w-full">
+                                            <x-secondary-button class="w-full justify-center">Reset</x-secondary-button>
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Tabel Absensi -->
                         <div class="overflow-x-auto">
-                           <p class="text-gray-600 mb-4">Dashboard absensi untuk hari: <strong>{{ $currentDate }}</strong></p>
+                           <p class="text-gray-600 mb-4">Menampilkan jadwal untuk: <strong>{{ $currentDate }}</strong></p>
                            <table class="min-w-full bg-white border">
-                               {{-- ======================================================= --}}
-                               {{-- BAGIAN YANG DIPERBARUI DENGAN KODE SORTING ANDA --}}
-                               {{-- ======================================================= --}}
                                <thead class="bg-gray-200">
                                    <tr>
-                                       @php
-                                           // Fungsi helper untuk membuat link sorting
-                                           $sortLink = fn($field, $label) => '
-                                               <a href="'.route('dashboard', [
-                                                   'sort' => $field,
-                                                   'direction' => ($sort === $field && $direction === 'asc') ? 'desc' : 'asc',
-                                               ]).'" class="inline-flex items-center">
-                                                   '.$label.'
-                                                   <x-sort-icon :sort="$sort" :direction="$direction" :field="$field" />
-                                               </a>';
-                                       @endphp
-                                       <th class="py-2 px-4 border-b">{!! $sortLink('time_slots.start_time', 'Jam Pelajaran') !!}</th>
-                                       <th class="py-2 px-4 border-b">{!! $sortLink('subjects.name', 'Mata Pelajaran') !!}</th>
-                                       <th class="py-2 px-4 border-b">{!! $sortLink('users.name', 'Guru') !!}</th>
-                                       <th class="py-2 px-4 border-b">{!! $sortLink('classrooms.name', 'Kelas') !!}</th>
+                                       <th class="py-2 px-4 border-b">{!! sortable_dashboard_link('time_slots.start_time', 'Jam', $sort, $direction) !!}</th>
+                                       <th class="py-2 px-4 border-b">{!! sortable_dashboard_link('subjects.name', 'Mata Pelajaran', $sort, $direction) !!}</th>
+                                       <th class="py-2 px-4 border-b">{!! sortable_dashboard_link('users.name', 'Guru', $sort, $direction) !!}</th>
+                                       <th class="py-2 px-4 border-b">{!! sortable_dashboard_link('classrooms.name', 'Kelas', $sort, $direction) !!}</th>
                                        <th class="py-2 px-4 border-b">Status & Keterangan</th>
                                    </tr>
                                </thead>
@@ -61,39 +115,28 @@
                                                     <form action="{{ route('attendance.store') }}" method="POST">
                                                         @csrf
                                                         <input type="hidden" name="schedule_id" value="{{ $schedule->id }}">
+                                                        <input type="hidden" name="attendance_date" value="{{ $selectedDateValue }}">
                                                         <div class="space-y-2">
-                                                            <select name="status" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm">
+                                                            <select name="status" class="block w-full rounded-md border-gray-300 shadow-sm text-sm">
                                                                 <option value="" @if(is_null($schedule->attendance_status)) selected @endif>Pilih Status</option>
                                                                 <option value="hadir" @if($schedule->attendance_status == 'hadir') selected @endif>Hadir</option>
                                                                 <option value="sakit" @if($schedule->attendance_status == 'sakit') selected @endif>Sakit</option>
                                                                 <option value="izin" @if($schedule->attendance_status == 'izin') selected @endif>Izin</option>
                                                                 <option value="alpa" @if($schedule->attendance_status == 'alpa') selected @endif>Alpa</option>
                                                             </select>
-                                                            <input type="text" name="remarks" class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm" placeholder="Keterangan (opsional)" value="{{ $schedule->attendance_remarks }}">
+                                                            <input type="text" name="remarks" class="block w-full border-gray-300 rounded-md shadow-sm text-sm" placeholder="Keterangan" value="{{ $schedule->attendance_remarks }}">
                                                             <button type="submit" class="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">Simpan</button>
                                                         </div>
                                                     </form>
                                                 @else
-                                                     @if($schedule->attendance_status)
-                                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                            @switch($schedule->attendance_status)
-                                                                @case('hadir') bg-green-100 text-green-800 @break
-                                                                @case('sakit') bg-yellow-100 text-yellow-800 @break
-                                                                @case('izin') bg-blue-100 text-blue-800 @break
-                                                                @case('alpa') bg-red-100 text-red-800 @break
-                                                            @endswitch">
-                                                            {{ ucfirst($schedule->attendance_status) }}
-                                                        </span>
-                                                    @else
-                                                        <span class="text-gray-500 text-sm">Belum Diabsen</span>
-                                                    @endif
+                                                     {{-- Tampilan jika bukan admin --}}
                                                 @endcan
                                            </td>
                                        </tr>
                                    @empty
                                        <tr>
                                            <td colspan="5" class="py-4 px-4 border-b text-center text-gray-500">
-                                               Tidak ada jadwal pelajaran untuk hari ini.
+                                               Tidak ada jadwal yang cocok dengan filter yang diterapkan.
                                            </td>
                                        </tr>
                                    @endforelse

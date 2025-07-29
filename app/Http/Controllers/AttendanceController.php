@@ -4,7 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Schedule;
 use App\Models\Attendance;
-use Illuminate\Http\Request; // <-- Pastikan ini di-import
+use App\Models\Classroom;
+use App\Models\Subject;
+use App\Models\TimeSlot;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,20 +18,29 @@ class AttendanceController extends Controller
 {
     use AuthorizesRequests;
 
-    /**
-     * Menampilkan dashboard yang sesuai dengan role pengguna.
-     */
-    public function index(Request $request) // <-- Tambahkan Request
+    public function index(Request $request)
     {
         $user = Auth::user();
 
         // Tampilan untuk Admin
         if ($user->role === 'admin') {
-            $today = Carbon::now()->dayOfWeekIso;
-            
             // ==========================================================
-            // LOGIKA SORTING DINAMIS UNTUK DASHBOARD ADMIN
+            // LOGIKA FILTER LANJUTAN
             // ==========================================================
+
+            // 1. Ambil semua data master untuk dropdown filter
+            $filterData = [
+                'teachers' => User::where('role', 'guru')->orderBy('name')->get(),
+                'subjects' => Subject::orderBy('name')->get(),
+                'classrooms' => Classroom::orderBy('name')->get(),
+                'timeSlots' => TimeSlot::orderBy('lesson_number')->get(),
+            ];
+
+            // 2. Tentukan tanggal yang akan ditampilkan. Default ke hari ini.
+            $selectedDate = Carbon::parse($request->input('date', 'today'));
+            $dayOfWeek = $selectedDate->dayOfWeekIso;
+
+            // 3. Logika sorting dinamis
             $sort = $request->get('sort', 'time_slots.start_time');
             $direction = $request->get('direction', 'asc');
             $allowedSorts = ['time_slots.start_time', 'subjects.name', 'users.name', 'classrooms.name'];
@@ -35,34 +48,52 @@ class AttendanceController extends Controller
                 $sort = 'time_slots.start_time';
             }
 
-            $schedulesToday = Schedule::with(['user', 'subject', 'classroom', 'timeSlot'])
+            // 4. Bangun query dasar
+            $query = Schedule::with(['user', 'subject', 'classroom', 'timeSlot'])
                 ->join('time_slots', 'schedules.time_slot_id', '=', 'time_slots.id')
                 ->join('subjects', 'schedules.subject_id', '=', 'subjects.id')
                 ->join('users', 'schedules.user_id', '=', 'users.id')
                 ->join('classrooms', 'schedules.classroom_id', '=', 'classrooms.id')
-                ->where('schedules.day_of_week', $today)
-                ->orderBy($sort, $direction)
+                ->where('schedules.day_of_week', $dayOfWeek);
+
+            // 5. Terapkan filter tambahan secara kondisional
+            if ($request->filled('time_slot_id')) {
+                $query->where('schedules.time_slot_id', $request->time_slot_id);
+            }
+            if ($request->filled('subject_id')) {
+                $query->where('schedules.subject_id', $request->subject_id);
+            }
+            if ($request->filled('user_id')) {
+                $query->where('schedules.user_id', $request->user_id);
+            }
+            if ($request->filled('classroom_id')) {
+                $query->where('schedules.classroom_id', $request->classroom_id);
+            }
+
+            // 6. Terapkan sorting dan eksekusi query
+            $schedules = $query->orderBy($sort, $direction)
                 ->select('schedules.*')
                 ->get();
             
-            // Ambil data absensi hari ini
-            $attendancesToday = Attendance::where('attendance_date', Carbon::today())->get();
+            // 7. Ambil data absensi untuk tanggal yang dipilih
+            $attendances = Attendance::whereDate('attendance_date', $selectedDate)->get();
 
-            // Gabungkan data absensi (status & keterangan) ke dalam jadwal
-            $schedulesToday->map(function ($schedule) use ($attendancesToday) {
-                $attendanceRecord = $attendancesToday->firstWhere('schedule_id', $schedule->id);
+            // 8. Gabungkan data absensi ke dalam jadwal
+            $schedules->map(function ($schedule) use ($attendances) {
+                $attendanceRecord = $attendances->firstWhere('schedule_id', $schedule->id);
                 $schedule->attendance_status = $attendanceRecord->status ?? null;
                 $schedule->attendance_remarks = $attendanceRecord->remarks ?? null;
                 return $schedule;
             });
 
-            // Kirim variabel sorting ke view
-            return view('dashboard', [
-                'schedules' => $schedulesToday,
-                'currentDate' => Carbon::now()->translatedFormat('l, d F Y'),
+            // 9. Kirim semua data yang dibutuhkan ke view
+            return view('dashboard', array_merge($filterData, [
+                'schedules' => $schedules,
+                'currentDate' => $selectedDate->translatedFormat('l, d F Y'),
+                'selectedDateValue' => $selectedDate->format('Y-m-d'),
                 'sort' => $sort,
                 'direction' => $direction,
-            ]);
+            ]));
         }
 
         // Tampilan untuk Guru (tidak berubah)
@@ -71,23 +102,19 @@ class AttendanceController extends Controller
                 ->where('user_id', $user->id)
                 ->get()
                 ->sortBy(['day_of_week', 'timeSlot.start_time']);
-
             $summary = Attendance::where('user_id', $user->id)
                 ->select('status', DB::raw('count(*) as total'))
                 ->groupBy('status')->get()->pluck('total', 'status');
-                
             $history = Attendance::where('user_id', $user->id)
                 ->latest('attendance_date')->take(10)->get();
-                
             return view('dashboard', compact('schedules', 'summary', 'history'));
         }
 
-        // Fallback
         return view('dashboard');
     }
 
     /**
-     * Menyimpan atau memperbarui data absensi.
+     * Menyimpan atau memperbarui data absensi untuk tanggal tertentu.
      */
     public function store(Request $request)
     {
@@ -97,13 +124,14 @@ class AttendanceController extends Controller
             'schedule_id' => 'required|exists:schedules,id',
             'status' => 'required|in:hadir,sakit,izin,alpa',
             'remarks' => 'nullable|string|max:255',
+            'attendance_date' => 'required|date_format:Y-m-d',
         ]);
 
         $schedule = Schedule::findOrFail($request->schedule_id);
 
         Attendance::updateOrCreate(
             [
-                'attendance_date' => Carbon::today(),
+                'attendance_date' => $request->attendance_date,
                 'schedule_id' => $request->schedule_id,
             ],
             [
