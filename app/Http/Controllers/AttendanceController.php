@@ -2,32 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Schedule;
 use App\Models\Attendance;
 use App\Models\Classroom;
+use App\Models\Schedule;
 use App\Models\Subject;
 use App\Models\TimeSlot;
 use App\Models\User;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class AttendanceController extends Controller
 {
     use AuthorizesRequests;
 
+    /**
+     * Menampilkan dashboard yang sesuai dengan role pengguna dan filter.
+     */
     public function index(Request $request)
     {
         $user = Auth::user();
 
         // Tampilan untuk Admin
         if ($user->role === 'admin') {
-            // ==========================================================
-            // LOGIKA FILTER LANJUTAN
-            // ==========================================================
-
             // 1. Ambil semua data master untuk dropdown filter
             $filterData = [
                 'teachers' => User::where('role', 'guru')->orderBy('name')->get(),
@@ -114,34 +113,45 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Menyimpan atau memperbarui data absensi untuk tanggal tertentu.
+     * Menyimpan atau memperbarui data absensi.
+     * Dapat merespons permintaan form biasa atau permintaan AJAX (JSON).
      */
     public function store(Request $request)
     {
     	$this->authorize('perform-attendance');
     
-        $request->validate([
+        $validated = $request->validate([
             'schedule_id' => 'required|exists:schedules,id',
             'status' => 'required|in:hadir,sakit,izin,alpa',
             'remarks' => 'nullable|string|max:255',
             'attendance_date' => 'required|date_format:Y-m-d',
         ]);
 
-        $schedule = Schedule::findOrFail($request->schedule_id);
+        $schedule = Schedule::findOrFail($validated['schedule_id']);
 
-        Attendance::updateOrCreate(
+        $attendance = Attendance::updateOrCreate(
             [
-                'attendance_date' => $request->attendance_date,
-                'schedule_id' => $request->schedule_id,
+                'attendance_date' => $validated['attendance_date'],
+                'schedule_id' => $validated['schedule_id'],
             ],
             [
                 'user_id' => $schedule->user_id,
-                'status' => $request->status,
-                'remarks' => $request->remarks,
+                'status' => $validated['status'],
+                'remarks' => $validated['remarks'],
                 'recorded_by' => Auth::id(),
             ]
         );
 
+        // Logika untuk merespons AJAX
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Absensi berhasil disimpan!',
+                'attendance' => $attendance,
+            ]);
+        }
+
+        // Fallback untuk non-AJAX
         return back()->with('success', 'Absensi berhasil disimpan!');
     }
 }

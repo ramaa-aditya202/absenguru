@@ -35,9 +35,7 @@
                     @endif
 
                     @if(Auth::user()->role == 'admin')
-                        {{-- ================================= --}}
                         {{-- Tampilan untuk Pengguna Admin --}}
-                        {{-- ================================= --}}
 
                         <!-- Panel Filter Lanjutan -->
                         <div class="mb-6 p-4 bg-gray-50 border rounded-lg">
@@ -83,7 +81,7 @@
                                     <div class="flex items-end space-x-2">
                                         <x-primary-button class="w-full justify-center">Terapkan</x-primary-button>
                                         <a href="{{ route('dashboard') }}" class="w-full">
-                                            <x-secondary-button class="w-full justify-center">Reset</x-secondary-button>
+                                            <x-secondary-button type="button" class="w-full justify-center">Reset</x-secondary-button>
                                         </a>
                                     </div>
                                 </div>
@@ -112,7 +110,7 @@
                                            <td class="py-2 px-4 border-b text-center">{{ $schedule->classroom->name }}</td>
                                            <td class="py-2 px-4 border-b align-top">
                                                 @can('perform-attendance')
-                                                    <form action="{{ route('attendance.store') }}" method="POST">
+                                                    <form action="{{ route('attendance.store') }}" method="POST" class="attendance-form">
                                                         @csrf
                                                         <input type="hidden" name="schedule_id" value="{{ $schedule->id }}">
                                                         <input type="hidden" name="attendance_date" value="{{ $selectedDateValue }}">
@@ -125,7 +123,7 @@
                                                                 <option value="alpa" @if($schedule->attendance_status == 'alpa') selected @endif>Alpa</option>
                                                             </select>
                                                             <input type="text" name="remarks" class="block w-full border-gray-300 rounded-md shadow-sm text-sm" placeholder="Keterangan" value="{{ $schedule->attendance_remarks }}">
-                                                            <button type="submit" class="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">Simpan</button>
+                                                            <button type="submit" class="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm transition duration-150 ease-in-out">Simpan</button>
                                                         </div>
                                                     </form>
                                                 @else
@@ -151,4 +149,70 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Hanya jalankan script jika user adalah admin
+            if (document.querySelector('.attendance-form')) {
+                const forms = document.querySelectorAll('.attendance-form');
+
+                forms.forEach(form => {
+                    form.addEventListener('submit', function (event) {
+                        event.preventDefault();
+
+                        const button = form.querySelector('button[type="submit"]');
+                        const originalButtonText = button.textContent;
+                        const originalButtonClass = button.className;
+
+                        button.textContent = 'Menyimpan...';
+                        button.disabled = true;
+
+                        const formData = new FormData(form);
+
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(err => { throw err; });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                button.textContent = 'Tersimpan!';
+                                button.className = 'w-full px-4 py-2 bg-green-500 text-white rounded text-sm transition duration-150 ease-in-out';
+                                
+                                setTimeout(() => {
+                                    button.textContent = originalButtonText;
+                                    button.className = originalButtonClass;
+                                    button.disabled = false;
+                                }, 2000);
+                            } else {
+                                throw new Error(data.message || 'Gagal menyimpan data.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            button.textContent = 'Gagal!';
+                            button.className = 'w-full px-4 py-2 bg-red-500 text-white rounded text-sm transition duration-150 ease-in-out';
+
+                            setTimeout(() => {
+                                button.textContent = originalButtonText;
+                                button.className = originalButtonClass;
+                                button.disabled = false;
+                            }, 3000);
+                        });
+                    });
+                });
+            }
+        });
+    </script>
+    @endpush
 </x-app-layout>
