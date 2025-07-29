@@ -119,22 +119,22 @@
                 </div>
             </div>
 
-    {{-- Grafik Kehadiran --}}
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-8">
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6 text-gray-900">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">
-                    Grafik Rekapitulasi Kehadiran
-                    @if(request('start_date') && request('end_date'))
-                        <span class="text-base font-normal text-gray-600">
-                            (Periode: {{ \Carbon\Carbon::parse(request('start_date'))->format('d M Y') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('d M Y') }})
-                        </span>
-                    @else
-                        <span class="text-base font-normal text-gray-600">(Semua Waktu)</span>
-                    @endif
-                </h3>
-                <div style="width: 100%; height: 500px;">
-                    <canvas id="attendanceChart"></canvas>
+            {{-- Grafik Kehadiran --}}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-6">
+                <div class="p-6 text-gray-900">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        Grafik Rekapitulasi Kehadiran
+                        @if(request('start_date') && request('end_date'))
+                            <span class="text-base font-normal text-gray-600">
+                                (Periode: {{ \Carbon\Carbon::parse(request('start_date'))->format('d M Y') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('d M Y') }})
+                            </span>
+                        @else
+                            <span class="text-base font-normal text-gray-600">(Semua Waktu)</span>
+                        @endif
+                    </h3>
+                    <div style="width: 100%; height: 500px;">
+                        <canvas id="attendanceChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -219,4 +219,4 @@
         });
     </script>
     @endpush
-    <!-- Penutup layout sudah ada di atas, tidak perlu ditulis ulang -->
+</x-app-layout>

@@ -86,6 +86,4 @@ class ReportController extends Controller
         // Kirim semua data ke view
         return view('admin.reports.index', compact('teachers', 'attendances', 'summary', 'chartData'));
     }
-
-    // Method chart dihapus, semua proses grafik digabung di index
 }
