@@ -1,7 +1,18 @@
-{{-- resources/views/admin/schedules/index.blade.php --}}
 @php
-$days = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu'];
+    // Array helper untuk nama hari
+    $days = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu'];
+
+    // Fungsi helper untuk membuat link sorting
+    function sortable_link($column, $title, $currentSort, $currentDirection) {
+        $newDirection = ($currentSort == $column && $currentDirection == 'asc') ? 'desc' : 'asc';
+        $icon = '';
+        if ($currentSort == $column) {
+            $icon = $currentDirection == 'asc' ? '&#9650;' : '&#9660;'; // Panah atas atau bawah
+        }
+        return '<a href="' . route('admin.schedules.index', ['sort' => $column, 'direction' => $newDirection]) . '">' . $title . ' ' . $icon . '</a>';
+    }
 @endphp
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('Manajemen Jadwal') }}</h2>
@@ -12,9 +23,16 @@ $days = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
 
-                    <div class="mb-4">
+                    {{-- ======================================================= --}}
+                    {{-- BAGIAN YANG DIPERBARUI DENGAN DUA TOMBOL BARU --}}
+                    {{-- ======================================================= --}}
+                    <div class="mb-4 flex space-x-2">
                         <a href="{{ route('admin.schedules.create') }}">
-                            <x-primary-button>{{ __('Tambah Jadwal') }}</x-primary-button>
+                            <x-primary-button>{{ __('Tambah Jadwal Satuan') }}</x-primary-button>
+                        </a>
+                        {{-- TOMBOL BARU --}}
+                        <a href="{{ route('admin.schedules.bulk-create') }}">
+                            <x-secondary-button>{{ __('Input Jadwal Massal per Kelas') }}</x-secondary-button>
                         </a>
                     </div>
                     
@@ -26,11 +44,11 @@ $days = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6
                         <table class="min-w-full bg-white border">
                             <thead class="bg-gray-200">
                                 <tr>
-                                    <th class="py-2 px-4 border-b">Hari</th>
-                                    <th class="py-2 px-4 border-b">Jam</th>
-                                    <th class="py-2 px-4 border-b">Mata Pelajaran</th>
-                                    <th class="py-2 px-4 border-b">Guru</th>
-                                    <th class="py-2 px-4 border-b">Kelas</th>
+                                    <th class="py-2 px-4 border-b">{!! sortable_link('schedules.day_of_week', 'Hari', $sort, $direction) !!}</th>
+                                    <th class="py-2 px-4 border-b">{!! sortable_link('time_slots.start_time', 'Jam', $sort, $direction) !!}</th>
+                                    <th class="py-2 px-4 border-b">{!! sortable_link('subjects.name', 'Mata Pelajaran', $sort, $direction) !!}</th>
+                                    <th class="py-2 px-4 border-b">{!! sortable_link('users.name', 'Guru', $sort, $direction) !!}</th>
+                                    <th class="py-2 px-4 border-b">{!! sortable_link('classrooms.name', 'Kelas', $sort, $direction) !!}</th>
                                     <th class="py-2 px-4 border-b">Aksi</th>
                                 </tr>
                             </thead>
@@ -38,7 +56,8 @@ $days = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6
                                 @forelse ($schedules as $schedule)
                                     <tr class="hover:bg-gray-50">
                                         <td class="py-2 px-4 border-b">{{ $days[$schedule->day_of_week] ?? 'N/A' }}</td>
-										<td class="py-2 px-4 border-b">{{ \Carbon\Carbon::parse($schedule->timeSlot->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->timeSlot->end_time)->format('H:i') }}</td>                                        <td class="py-2 px-4 border-b">{{ $schedule->subject->name }}</td>
+                                        <td class="py-2 px-4 border-b">{{ \Carbon\Carbon::parse($schedule->timeSlot->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->timeSlot->end_time)->format('H:i') }}</td>
+                                        <td class="py-2 px-4 border-b">{{ $schedule->subject->name }}</td>
                                         <td class="py-2 px-4 border-b">{{ $schedule->user->name }}</td>
                                         <td class="py-2 px-4 border-b">{{ $schedule->classroom->name }}</td>
                                         <td class="py-2 px-4 border-b text-center">

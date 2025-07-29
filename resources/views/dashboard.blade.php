@@ -1,7 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{-- Judul dinamis berdasarkan role --}}
             @if(Auth::user()->role == 'admin')
                 {{ __('Dashboard Absensi Guru') }}
             @else
@@ -20,7 +19,6 @@
                         </div>
                     @endif
 
-                    {{-- Tampilkan view yang sesuai dengan role --}}
                     @if(Auth::user()->role == 'admin')
                         {{-- ================================= --}}
                         {{-- Tampilan untuk Pengguna Admin --}}
@@ -28,29 +26,42 @@
                         <div class="overflow-x-auto">
                            <p class="text-gray-600 mb-4">Dashboard absensi untuk hari: <strong>{{ $currentDate }}</strong></p>
                            <table class="min-w-full bg-white border">
+                               {{-- ======================================================= --}}
+                               {{-- BAGIAN YANG DIPERBARUI DENGAN KODE SORTING ANDA --}}
+                               {{-- ======================================================= --}}
                                <thead class="bg-gray-200">
                                    <tr>
-                                       <th class="py-2 px-4 border-b">Jam Pelajaran</th>
-                                       <th class="py-2 px-4 border-b">Mata Pelajaran</th>
-                                       <th class="py-2 px-4 border-b">Guru</th>
-                                       <th class="py-2 px-4 border-b">Kelas</th>
+                                       @php
+                                           // Fungsi helper untuk membuat link sorting
+                                           $sortLink = fn($field, $label) => '
+                                               <a href="'.route('dashboard', [
+                                                   'sort' => $field,
+                                                   'direction' => ($sort === $field && $direction === 'asc') ? 'desc' : 'asc',
+                                               ]).'" class="inline-flex items-center">
+                                                   '.$label.'
+                                                   <x-sort-icon :sort="$sort" :direction="$direction" :field="$field" />
+                                               </a>';
+                                       @endphp
+                                       <th class="py-2 px-4 border-b">{!! $sortLink('time_slots.start_time', 'Jam Pelajaran') !!}</th>
+                                       <th class="py-2 px-4 border-b">{!! $sortLink('subjects.name', 'Mata Pelajaran') !!}</th>
+                                       <th class="py-2 px-4 border-b">{!! $sortLink('users.name', 'Guru') !!}</th>
+                                       <th class="py-2 px-4 border-b">{!! $sortLink('classrooms.name', 'Kelas') !!}</th>
                                        <th class="py-2 px-4 border-b">Status & Keterangan</th>
                                    </tr>
                                </thead>
                                <tbody>
                                    @forelse ($schedules as $schedule)
                                        <tr class="hover:bg-gray-50">
-										   <td class="py-2 px-4 border-b text-center">{{ \Carbon\Carbon::parse($schedule->timeSlot->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->timeSlot->end_time)->format('H:i') }}</td>                                           <td class="py-2 px-4 border-b">{{ $schedule->subject->name }}</td>
+                                           <td class="py-2 px-4 border-b text-center">{{ \Carbon\Carbon::parse($schedule->timeSlot->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->timeSlot->end_time)->format('H:i') }}</td>
+                                           <td class="py-2 px-4 border-b">{{ $schedule->subject->name }}</td>
                                            <td class="py-2 px-4 border-b">{{ $schedule->user->name }}</td>
                                            <td class="py-2 px-4 border-b text-center">{{ $schedule->classroom->name }}</td>
                                            <td class="py-2 px-4 border-b align-top">
-                                                {{-- Cek hak akses menggunakan Gate 'perform-attendance' --}}
                                                 @can('perform-attendance')
                                                     <form action="{{ route('attendance.store') }}" method="POST">
                                                         @csrf
                                                         <input type="hidden" name="schedule_id" value="{{ $schedule->id }}">
                                                         <div class="space-y-2">
-                                                            {{-- Dropdown Status --}}
                                                             <select name="status" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm">
                                                                 <option value="" @if(is_null($schedule->attendance_status)) selected @endif>Pilih Status</option>
                                                                 <option value="hadir" @if($schedule->attendance_status == 'hadir') selected @endif>Hadir</option>
@@ -58,14 +69,11 @@
                                                                 <option value="izin" @if($schedule->attendance_status == 'izin') selected @endif>Izin</option>
                                                                 <option value="alpa" @if($schedule->attendance_status == 'alpa') selected @endif>Alpa</option>
                                                             </select>
-                                                            {{-- Input Keterangan --}}
-                                                            <input type="text" name="remarks" class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm" placeholder="Keterangan (opsional)">
-                                                            {{-- Tombol Simpan --}}
+                                                            <input type="text" name="remarks" class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm" placeholder="Keterangan (opsional)" value="{{ $schedule->attendance_remarks }}">
                                                             <button type="submit" class="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">Simpan</button>
                                                         </div>
                                                     </form>
                                                 @else
-                                                    {{-- Tampilan jika bukan admin --}}
                                                      @if($schedule->attendance_status)
                                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                                             @switch($schedule->attendance_status)
@@ -93,9 +101,7 @@
                            </table>
                        </div>
                     @else
-                        {{-- ================================= --}}
-                        {{-- Tampilan untuk Pengguna Guru --}}
-                        {{-- ================================= --}}
+                        {{-- Tampilan untuk Guru --}}
                         @include('teacher-dashboard')
                     @endif
                 </div>

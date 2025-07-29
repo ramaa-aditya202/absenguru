@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Schedule;
 use App\Models\Attendance;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request; // <-- Pastikan ini di-import
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,22 +17,32 @@ class AttendanceController extends Controller
     /**
      * Menampilkan dashboard yang sesuai dengan role pengguna.
      */
-    public function index()
+    public function index(Request $request) // <-- Tambahkan Request
     {
         $user = Auth::user();
 
         // Tampilan untuk Admin
         if ($user->role === 'admin') {
             $today = Carbon::now()->dayOfWeekIso;
+            
+            // ==========================================================
+            // LOGIKA SORTING DINAMIS UNTUK DASHBOARD ADMIN
+            // ==========================================================
+            $sort = $request->get('sort', 'time_slots.start_time');
+            $direction = $request->get('direction', 'asc');
+            $allowedSorts = ['time_slots.start_time', 'subjects.name', 'users.name', 'classrooms.name'];
+            if (!in_array($sort, $allowedSorts)) {
+                $sort = 'time_slots.start_time';
+            }
 
-            // =================================================================
-            // PERBAIKAN DI SINI: Gunakan JOIN untuk sorting berdasarkan TimeSlot
-            // =================================================================
             $schedulesToday = Schedule::with(['user', 'subject', 'classroom', 'timeSlot'])
                 ->join('time_slots', 'schedules.time_slot_id', '=', 'time_slots.id')
+                ->join('subjects', 'schedules.subject_id', '=', 'subjects.id')
+                ->join('users', 'schedules.user_id', '=', 'users.id')
+                ->join('classrooms', 'schedules.classroom_id', '=', 'classrooms.id')
                 ->where('schedules.day_of_week', $today)
-                ->orderBy('time_slots.start_time', 'asc')
-                ->select('schedules.*') // Penting: Pilih semua kolom dari schedules
+                ->orderBy($sort, $direction)
+                ->select('schedules.*')
                 ->get();
             
             // Ambil data absensi hari ini
@@ -46,13 +56,16 @@ class AttendanceController extends Controller
                 return $schedule;
             });
 
+            // Kirim variabel sorting ke view
             return view('dashboard', [
                 'schedules' => $schedulesToday,
-                'currentDate' => Carbon::now()->translatedFormat('l, d F Y')
+                'currentDate' => Carbon::now()->translatedFormat('l, d F Y'),
+                'sort' => $sort,
+                'direction' => $direction,
             ]);
         }
 
-        // Tampilan untuk Guru
+        // Tampilan untuk Guru (tidak berubah)
         if ($user->role === 'guru') {
             $schedules = Schedule::with(['subject', 'classroom', 'timeSlot'])
                 ->where('user_id', $user->id)

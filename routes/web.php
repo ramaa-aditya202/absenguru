@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\ClassroomController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\BulkScheduleController;
 
 
 Route::get('/', function () {
@@ -29,12 +30,16 @@ Route::middleware('auth')->group(function () {
 
     // LETAKKAN GRUP ROUTE ADMIN DI SINI, DI DALAM MIDDLEWARE 'auth'
     Route::middleware(['admin'])->name('admin.')->prefix('admin')->group(function () {
-        Route::resource('teachers', TeacherController::class);
+    	Route::get('schedules/bulk-create', [BulkScheduleController::class, 'show'])->name('schedules.bulk-create');
+    	Route::post('schedules/bulk-store', [BulkScheduleController::class, 'store'])->name('schedules.bulk-store');
+   		Route::resource('teachers', TeacherController::class);
         Route::resource('subjects', SubjectController::class);
         Route::resource('classrooms', ClassroomController::class);
         Route::resource('schedules', ScheduleController::class);
     	Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-		Route::get('reports/chart', [ReportController::class, 'chart'])->name('reports.chart');    
+		Route::get('reports/chart', [ReportController::class, 'chart'])->name('reports.chart');
+
+
     });
 });
 
