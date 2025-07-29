@@ -118,40 +118,68 @@ class AttendanceController extends Controller
      */
     public function store(Request $request)
     {
-    	$this->authorize('perform-attendance');
-    
-        $validated = $request->validate([
-            'schedule_id' => 'required|exists:schedules,id',
-            'status' => 'required|in:hadir,sakit,izin,alpa',
-            'remarks' => 'nullable|string|max:255',
-            'attendance_date' => 'required|date_format:Y-m-d',
-        ]);
-
-        $schedule = Schedule::findOrFail($validated['schedule_id']);
-
-        $attendance = Attendance::updateOrCreate(
-            [
-                'attendance_date' => $validated['attendance_date'],
-                'schedule_id' => $validated['schedule_id'],
-            ],
-            [
-                'user_id' => $schedule->user_id,
-                'status' => $validated['status'],
-                'remarks' => $validated['remarks'],
-                'recorded_by' => Auth::id(),
-            ]
-        );
-
-        // Logika untuk merespons AJAX
-        if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Absensi berhasil disimpan!',
-                'attendance' => $attendance,
+        try {
+            $this->authorize('perform-attendance');
+        
+            $validated = $request->validate([
+                'schedule_id' => 'required|exists:schedules,id',
+                'status' => 'required|in:hadir,sakit,izin,alpa',
+                'remarks' => 'nullable|string|max:255',
+                'attendance_date' => 'required|date_format:Y-m-d',
             ]);
-        }
 
-        // Fallback untuk non-AJAX
-        return back()->with('success', 'Absensi berhasil disimpan!');
+            $schedule = Schedule::findOrFail($validated['schedule_id']);
+
+            $attendance = Attendance::updateOrCreate(
+                [
+                    'attendance_date' => $validated['attendance_date'],
+                    'schedule_id' => $validated['schedule_id'],
+                ],
+                [
+                    'user_id' => $schedule->user_id,
+                    'status' => $validated['status'],
+                    'remarks' => $validated['remarks'],
+                    'recorded_by' => Auth::id(),
+                ]
+            );
+
+            // Logika untuk merespons AJAX
+            if ($request->wantsJson() || $request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Absensi berhasil disimpan!',
+                    'attendance' => $attendance,
+                ]);
+            }
+
+            // Fallback untuk non-AJAX
+            return back()->with('success', 'Absensi berhasil disimpan!');
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->wantsJson() || $request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            if ($request->wantsJson() || $request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized action'
+                ], 403);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if ($request->wantsJson() || $request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred: ' . $e->getMessage()
+                ], 500);
+            }
+            throw $e;
+        }
     }
 }

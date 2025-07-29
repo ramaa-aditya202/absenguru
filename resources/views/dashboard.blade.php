@@ -175,16 +175,41 @@
                             body: formData,
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
                             }
                         })
                         .then(response => {
+                            console.log('Response status:', response.status);
+                            console.log('Response headers:', response.headers.get('content-type'));
+                            
                             if (!response.ok) {
-                                return response.json().then(err => { throw err; });
+                                // Jika response tidak OK, coba parse sebagai JSON untuk error details
+                                return response.text().then(text => {
+                                    console.log('Error response text:', text);
+                                    try {
+                                        const json = JSON.parse(text);
+                                        throw json;
+                                    } catch (e) {
+                                        throw new Error('Server error: ' + response.status);
+                                    }
+                                });
                             }
-                            return response.json();
+                            
+                            // Cek apakah response adalah JSON
+                            const contentType = response.headers.get('content-type');
+                            if (contentType && contentType.includes('application/json')) {
+                                return response.json();
+                            } else {
+                                // Jika bukan JSON, mungkin redirect atau HTML
+                                return response.text().then(text => {
+                                    console.log('Non-JSON response:', text);
+                                    throw new Error('Server returned non-JSON response');
+                                });
+                            }
                         })
                         .then(data => {
+                            console.log('Success response:', data);
                             if (data.success) {
                                 button.textContent = 'Tersimpan!';
                                 button.className = 'w-full px-4 py-2 bg-green-500 text-white rounded text-sm transition duration-150 ease-in-out';
@@ -200,7 +225,15 @@
                         })
                         .catch(error => {
                             console.error('Error:', error);
-                            button.textContent = 'Gagal!';
+                            
+                            // Tampilkan error message yang lebih spesifik
+                            let errorMessage = 'Gagal!';
+                            if (error.message) {
+                                errorMessage = error.message.includes('Server') ? 'Server Error!' : 'Gagal!';
+                                console.log('Detailed error:', error.message);
+                            }
+                            
+                            button.textContent = errorMessage;
                             button.className = 'w-full px-4 py-2 bg-red-500 text-white rounded text-sm transition duration-150 ease-in-out';
 
                             setTimeout(() => {
