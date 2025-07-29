@@ -210,17 +210,20 @@
                         })
                         .then(data => {
                             console.log('Success response:', data);
-                            if (data.success) {
-                                button.textContent = 'Tersimpan!';
-                                button.className = 'w-full px-4 py-2 bg-green-500 text-white rounded text-sm transition duration-150 ease-in-out';
+                            // Pastikan response mengandung success: true
+                            if (data && data.success === true) {
+                                button.textContent = 'Tersimpan';
+                                button.className = 'w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded text-sm transition duration-150 ease-in-out';
+                                button.style.backgroundColor = '#10b981'; // Hijau yang lebih jelas
                                 
                                 setTimeout(() => {
                                     button.textContent = originalButtonText;
                                     button.className = originalButtonClass;
+                                    button.style.backgroundColor = ''; // Reset inline style
                                     button.disabled = false;
                                 }, 2000);
                             } else {
-                                throw new Error(data.message || 'Gagal menyimpan data.');
+                                throw new Error(data && data.message ? data.message : 'Gagal menyimpan data.');
                             }
                         })
                         .catch(error => {

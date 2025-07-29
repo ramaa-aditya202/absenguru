@@ -149,7 +149,7 @@ class AttendanceController extends Controller
                     'success' => true,
                     'message' => 'Absensi berhasil disimpan!',
                     'attendance' => $attendance,
-                ]);
+                ], 200); // Pastikan status code 200
             }
 
             // Fallback untuk non-AJAX
