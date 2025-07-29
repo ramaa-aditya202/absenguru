@@ -37,6 +37,11 @@ class ReportController extends Controller
             $query->where('user_id', $request->user_id);
         }
 
+        // Terapkan filter status jika ada
+        if ($request->filled('status')) {
+            $query->whereIn('status', $request->status);
+        }
+
         // Buat query terpisah untuk rekapitulasi (summary)
         $summaryQuery = clone $query;
         $summary = $summaryQuery
@@ -64,6 +69,10 @@ class ReportController extends Controller
         if ($request->filled('user_id')) {
             $chartQuery->where('attendances.user_id', $request->user_id);
         }
+        // Terapkan filter status jika ada
+        if ($request->filled('status')) {
+            $chartQuery->whereIn('attendances.status', $request->status);
+        }
 
         $attendanceData = $chartQuery->groupBy('users.name', 'attendances.status')->get();
         $teacherNames = $attendanceData->pluck('teacher_name')->unique()->values();
@@ -83,7 +92,23 @@ class ReportController extends Controller
             $chartData['datasets']['alpa'][] = $attendanceData->where('teacher_name', $teacher)->where('status', 'alpa')->first()->total ?? 0;
         }
 
+        // --- Hitung persentase kehadiran per guru ---
+        $teacherAttendanceStats = [];
+        foreach ($teacherNames as $teacher) {
+            $hadirCount = $attendanceData->where('teacher_name', $teacher)->where('status', 'hadir')->first()->total ?? 0;
+            $totalCount = $attendanceData->where('teacher_name', $teacher)->sum('total');
+            
+            $percentage = $totalCount > 0 ? round(($hadirCount / $totalCount) * 100, 1) : 0;
+            
+            $teacherAttendanceStats[] = [
+                'name' => $teacher,
+                'hadir' => $hadirCount,
+                'total' => $totalCount,
+                'percentage' => $percentage
+            ];
+        }
+
         // Kirim semua data ke view
-        return view('admin.reports.index', compact('teachers', 'attendances', 'summary', 'chartData'));
+        return view('admin.reports.index', compact('teachers', 'attendances', 'summary', 'chartData', 'teacherAttendanceStats'));
     }
 }

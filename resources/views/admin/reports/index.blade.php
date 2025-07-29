@@ -13,7 +13,7 @@
                 <div class="p-6 text-gray-900">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Filter Laporan</h3>
                     <form method="GET" action="{{ route('admin.reports.index') }}">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                             {{-- Filter Tanggal Mulai --}}
                             <div>
                                 <x-input-label for="start_date" :value="__('Tanggal Mulai')" />
@@ -34,11 +34,32 @@
                                     @endforeach
                                 </select>
                             </div>
+                            {{-- Filter Status --}}
+                            <div>
+                                <x-input-label :value="__('Status')" />
+                                <div class="mt-1 space-y-2">
+                                    @php
+                                        $statuses = ['hadir' => 'Hadir', 'sakit' => 'Sakit', 'izin' => 'Izin', 'alpa' => 'Alpa'];
+                                        $selectedStatuses = request('status', []);
+                                    @endphp
+                                    @foreach($statuses as $value => $label)
+                                        <label class="flex items-center">
+                                            <input type="checkbox" name="status[]" value="{{ $value }}" 
+                                                @if(in_array($value, $selectedStatuses)) checked @endif
+                                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                            <span class="ml-2 text-sm text-gray-600">{{ $label }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
                             {{-- Tombol Filter --}}
-                            <div class="flex items-end">
+                            <div class="flex items-end space-x-2">
                                 <x-primary-button>
                                     {{ __('Terapkan Filter') }}
                                 </x-primary-button>
+                                <a href="{{ route('admin.reports.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 focus:bg-gray-400 active:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                    {{ __('Reset') }}
+                                </a>
                             </div>
                         </div>
                     </form>
@@ -68,6 +89,42 @@
                             <div class="text-sm text-red-600">Alpa</div>
                         </div>
                     </div>
+
+                    {{-- Tabel Persentase Kehadiran per Guru --}}
+                    @if(!empty($teacherAttendanceStats))
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 mt-8">Persentase Kehadiran per Guru</h3>
+                    <div class="overflow-x-auto mb-6">
+                        <table class="min-w-full bg-white border">
+                            <thead class="bg-gray-200">
+                                <tr>
+                                    <th class="py-2 px-4 border-b text-left">Nama Guru</th>
+                                    <th class="py-2 px-4 border-b text-center">Hadir</th>
+                                    <th class="py-2 px-4 border-b text-center">Total Absensi</th>
+                                    <th class="py-2 px-4 border-b text-center">Persentase Kehadiran</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($teacherAttendanceStats as $stat)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="py-2 px-4 border-b font-medium">{{ $stat['name'] }}</td>
+                                        <td class="py-2 px-4 border-b text-center">{{ $stat['hadir'] }}</td>
+                                        <td class="py-2 px-4 border-b text-center">{{ $stat['total'] }}</td>
+                                        <td class="py-2 px-4 border-b text-center">
+                                            <span class="px-2 py-1 rounded-full text-sm font-medium
+                                                @if($stat['percentage'] >= 90) bg-green-100 text-green-800
+                                                @elseif($stat['percentage'] >= 80) bg-yellow-100 text-yellow-800
+                                                @elseif($stat['percentage'] >= 70) bg-orange-100 text-orange-800
+                                                @else bg-red-100 text-red-800
+                                                @endif">
+                                                {{ $stat['percentage'] }}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @endif
 
                     {{-- Tabel Detail Laporan --}}
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Detail Absensi</h3>
