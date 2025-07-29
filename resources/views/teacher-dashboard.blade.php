@@ -39,11 +39,11 @@
         <div class="bg-white border rounded-lg p-4">
             @forelse($schedules as $day => $daySchedules)
                 <div class="mb-4">
-                    <p class="font-bold text-gray-700">{{ $days[$day] }}</p>
+                    <p class="font-bold text-gray-700">{{ $days[$day] ?? 'Tidak diketahui' }}</p>
                     <ul class="list-disc list-inside ml-4 text-gray-600">
                         @foreach($daySchedules as $schedule)
                             <li>
-                                <span class="font-semibold">{{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}</span>:
+                                <span class="font-semibold">{{ \Carbon\Carbon::parse($schedule->timeSlot->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->timeSlot->end_time)->format('H:i') }}</span>:
                                 {{ $schedule->subject->name }} di kelas {{ $schedule->classroom->name }}
                             </li>
                         @endforeach

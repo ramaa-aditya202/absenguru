@@ -100,7 +100,9 @@ class AttendanceController extends Controller
             $schedules = Schedule::with(['subject', 'classroom', 'timeSlot'])
                 ->where('user_id', $user->id)
                 ->get()
-                ->sortBy(['day_of_week', 'timeSlot.start_time']);
+                ->sortBy(['day_of_week', 'timeSlot.start_time'])
+                ->groupBy('day_of_week'); // Group berdasarkan hari
+                
             $summary = Attendance::where('user_id', $user->id)
                 ->select('status', DB::raw('count(*) as total'))
                 ->groupBy('status')->get()->pluck('total', 'status');
