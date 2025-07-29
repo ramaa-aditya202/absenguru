@@ -219,7 +219,4 @@
         });
     </script>
     @endpush
-</x-app-layout>
-        </div>
-    </div>
-</x-app-layout>
+    <!-- Penutup layout sudah ada di atas, tidak perlu ditulis ulang -->
