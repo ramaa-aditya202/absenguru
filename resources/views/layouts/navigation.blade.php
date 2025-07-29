@@ -51,12 +51,7 @@
 
                             <div class="border-t border-gray-200 dark:border-gray-600"></div>
                             <x-dropdown-link :href="route('admin.reports.index')">
-                                {{ __('Laporan Absensi') }}
-                            </x-dropdown-link>
-                            
-                            {{-- ===== LINK BARU UNTUK DESKTOP ===== --}}
-                            <x-dropdown-link :href="route('admin.reports.chart')">
-                                {{ __('Grafik Kehadiran') }}
+                                {{ __('Laporan Absensi & Grafik') }}
                             </x-dropdown-link>
 
                         </x-slot>
@@ -138,12 +133,7 @@
                     
                     <div class="border-t border-gray-200 dark:border-gray-600"></div>
                     <x-responsive-nav-link :href="route('admin.reports.index')">
-                        {{ __('Laporan Absensi') }}
-                    </x-responsive-nav-link>
-                    
-                    {{-- ===== LINK BARU UNTUK MOBILE ===== --}}
-                    <x-responsive-nav-link :href="route('admin.reports.chart')">
-                        {{ __('Grafik Kehadiran') }}
+                        {{ __('Laporan Absensi & Grafik') }}
                     </x-responsive-nav-link>
                 </div>
             </div>
