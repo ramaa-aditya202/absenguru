@@ -96,6 +96,9 @@ class ReportController extends Controller
         $teacherAttendanceStats = [];
         foreach ($teacherNames as $teacher) {
             $hadirCount = $attendanceData->where('teacher_name', $teacher)->where('status', 'hadir')->first()->total ?? 0;
+            $sakitCount = $attendanceData->where('teacher_name', $teacher)->where('status', 'sakit')->first()->total ?? 0;
+            $izinCount = $attendanceData->where('teacher_name', $teacher)->where('status', 'izin')->first()->total ?? 0;
+            $alpaCount = $attendanceData->where('teacher_name', $teacher)->where('status', 'alpa')->first()->total ?? 0;
             $totalCount = $attendanceData->where('teacher_name', $teacher)->sum('total');
             
             $percentage = $totalCount > 0 ? round(($hadirCount / $totalCount) * 100, 1) : 0;
@@ -103,12 +106,28 @@ class ReportController extends Controller
             $teacherAttendanceStats[] = [
                 'name' => $teacher,
                 'hadir' => $hadirCount,
+                'sakit' => $sakitCount,
+                'izin' => $izinCount,
+                'alpa' => $alpaCount,
                 'total' => $totalCount,
                 'percentage' => $percentage
             ];
         }
 
+        // Sorting untuk tabel persentase kehadiran
+        $sortBy = $request->get('sort_stats', 'name');
+        $sortDirection = $request->get('sort_direction', 'asc');
+        
+        if (in_array($sortBy, ['name', 'hadir', 'sakit', 'izin', 'alpa', 'total', 'percentage'])) {
+            usort($teacherAttendanceStats, function($a, $b) use ($sortBy, $sortDirection) {
+                if ($sortDirection === 'desc') {
+                    return $b[$sortBy] <=> $a[$sortBy];
+                }
+                return $a[$sortBy] <=> $b[$sortBy];
+            });
+        }
+
         // Kirim semua data ke view
-        return view('admin.reports.index', compact('teachers', 'attendances', 'summary', 'chartData', 'teacherAttendanceStats'));
+        return view('admin.reports.index', compact('teachers', 'attendances', 'summary', 'chartData', 'teacherAttendanceStats', 'sortBy', 'sortDirection'));
     }
 }
