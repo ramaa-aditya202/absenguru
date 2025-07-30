@@ -42,20 +42,8 @@ class ReportController extends Controller
             $query->whereIn('status', $request->status);
         }
 
-        // Buat query terpisah untuk rekapitulasi (summary) - TANPA filter status
-        $summaryQuery = Attendance::query();
-        
-        // Terapkan filter tanggal dan guru yang sama seperti detail, tapi TIDAK filter status
-        if ($request->filled('start_date')) {
-            $summaryQuery->whereDate('attendance_date', '>=', $request->start_date);
-        }
-        if ($request->filled('end_date')) {
-            $summaryQuery->whereDate('attendance_date', '<=', $request->end_date);
-        }
-        if ($request->filled('user_id')) {
-            $summaryQuery->where('user_id', $request->user_id);
-        }
-        
+        // Buat query terpisah untuk rekapitulasi (summary)
+        $summaryQuery = clone $query;
         $summary = $summaryQuery
             ->select('status', DB::raw('count(*) as total'))
             ->groupBy('status')
@@ -65,37 +53,29 @@ class ReportController extends Controller
         // Ambil data detail absensi dengan paginasi
         $attendances = $query->latest('attendance_date')->paginate(15);
 
-        // --- Proses data untuk grafik dan statistik guru ---
-        // Ambil daftar guru yang akan ditampilkan berdasarkan filter
-        $teachersQuery = User::where('role', 'guru');
-        if ($request->filled('user_id')) {
-            $teachersQuery->where('id', $request->user_id);
-        }
-        $selectedTeachers = $teachersQuery->orderBy('name')->get();
-        
-        // Query untuk data absensi guru (dengan filter tanggal, tetapi TIDAK filter status)
-        $statsQuery = Attendance::join('users', 'attendances.user_id', '=', 'users.id')
+        // --- Proses data untuk grafik (Chart.js) ---
+        $chartQuery = Attendance::join('users', 'attendances.user_id', '=', 'users.id')
             ->select('users.name as teacher_name', 'attendances.status', DB::raw('count(*) as total'))
             ->where('users.role', 'guru');
 
         // Terapkan filter tanggal jika ada
         if ($request->filled('start_date')) {
-            $statsQuery->whereDate('attendances.attendance_date', '>=', $request->start_date);
+            $chartQuery->whereDate('attendances.attendance_date', '>=', $request->start_date);
         }
         if ($request->filled('end_date')) {
-            $statsQuery->whereDate('attendances.attendance_date', '<=', $request->end_date);
+            $chartQuery->whereDate('attendances.attendance_date', '<=', $request->end_date);
         }
         // Filter guru jika ada
         if ($request->filled('user_id')) {
-            $statsQuery->where('attendances.user_id', $request->user_id);
+            $chartQuery->where('attendances.user_id', $request->user_id);
         }
-        // TIDAK menerapkan filter status untuk statistik yang akurat
+        // Terapkan filter status jika ada
+        if ($request->filled('status')) {
+            $chartQuery->whereIn('attendances.status', $request->status);
+        }
 
-        $attendanceData = $statsQuery->groupBy('users.name', 'attendances.status')->get();
-        
-        // Gunakan nama guru dari daftar guru yang dipilih, bukan hanya dari data absensi
-        $teacherNames = $selectedTeachers->pluck('name');
-        
+        $attendanceData = $chartQuery->groupBy('users.name', 'attendances.status')->get();
+        $teacherNames = $attendanceData->pluck('teacher_name')->unique()->values();
         $chartData = [
             'labels' => $teacherNames,
             'datasets' => [
