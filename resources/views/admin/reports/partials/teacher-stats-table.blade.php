@@ -11,7 +11,7 @@
         <thead class="bg-gray-200">
             <tr>
                 <th class="py-2 px-4 border-b text-left">
-                    <a href="javascript:void(0)" onclick="sortTable('name', '{{ ($sortBy == 'name' && $sortDirection == 'asc') ? 'desc' : 'asc' }}')" class="flex items-center hover:text-blue-600">
+                    <a href="javascript:void(0)" onclick="sortTable('name')" class="flex items-center hover:text-blue-600">
                         Nama Guru
                         @if($sortBy == 'name')
                             <span class="ml-1">{{ $sortDirection == 'asc' ? '↑' : '↓' }}</span>
@@ -19,7 +19,7 @@
                     </a>
                 </th>
                 <th class="py-2 px-4 border-b text-center">
-                    <a href="javascript:void(0)" onclick="sortTable('hadir', '{{ ($sortBy == 'hadir' && $sortDirection == 'asc') ? 'desc' : 'asc' }}')" class="flex items-center justify-center hover:text-blue-600">
+                    <a href="javascript:void(0)" onclick="sortTable('hadir')" class="flex items-center justify-center hover:text-blue-600">
                         Hadir
                         @if($sortBy == 'hadir')
                             <span class="ml-1">{{ $sortDirection == 'asc' ? '↑' : '↓' }}</span>
@@ -27,7 +27,7 @@
                     </a>
                 </th>
                 <th class="py-2 px-4 border-b text-center">
-                    <a href="javascript:void(0)" onclick="sortTable('sakit', '{{ ($sortBy == 'sakit' && $sortDirection == 'asc') ? 'desc' : 'asc' }}')" class="flex items-center justify-center hover:text-blue-600">
+                    <a href="javascript:void(0)" onclick="sortTable('sakit')" class="flex items-center justify-center hover:text-blue-600">
                         Sakit
                         @if($sortBy == 'sakit')
                             <span class="ml-1">{{ $sortDirection == 'asc' ? '↑' : '↓' }}</span>
@@ -35,7 +35,7 @@
                     </a>
                 </th>
                 <th class="py-2 px-4 border-b text-center">
-                    <a href="javascript:void(0)" onclick="sortTable('izin', '{{ ($sortBy == 'izin' && $sortDirection == 'asc') ? 'desc' : 'asc' }}')" class="flex items-center justify-center hover:text-blue-600">
+                    <a href="javascript:void(0)" onclick="sortTable('izin')" class="flex items-center justify-center hover:text-blue-600">
                         Izin
                         @if($sortBy == 'izin')
                             <span class="ml-1">{{ $sortDirection == 'asc' ? '↑' : '↓' }}</span>
@@ -43,7 +43,7 @@
                     </a>
                 </th>
                 <th class="py-2 px-4 border-b text-center">
-                    <a href="javascript:void(0)" onclick="sortTable('alpa', '{{ ($sortBy == 'alpa' && $sortDirection == 'asc') ? 'desc' : 'asc' }}')" class="flex items-center justify-center hover:text-blue-600">
+                    <a href="javascript:void(0)" onclick="sortTable('alpa')" class="flex items-center justify-center hover:text-blue-600">
                         Alpa
                         @if($sortBy == 'alpa')
                             <span class="ml-1">{{ $sortDirection == 'asc' ? '↑' : '↓' }}</span>
@@ -51,7 +51,7 @@
                     </a>
                 </th>
                 <th class="py-2 px-4 border-b text-center">
-                    <a href="javascript:void(0)" onclick="sortTable('total', '{{ ($sortBy == 'total' && $sortDirection == 'asc') ? 'desc' : 'asc' }}')" class="flex items-center justify-center hover:text-blue-600">
+                    <a href="javascript:void(0)" onclick="sortTable('total')" class="flex items-center justify-center hover:text-blue-600">
                         Total Absensi
                         @if($sortBy == 'total')
                             <span class="ml-1">{{ $sortDirection == 'asc' ? '↑' : '↓' }}</span>
@@ -59,7 +59,7 @@
                     </a>
                 </th>
                 <th class="py-2 px-4 border-b text-center">
-                    <a href="javascript:void(0)" onclick="sortTable('percentage', '{{ ($sortBy == 'percentage' && $sortDirection == 'asc') ? 'desc' : 'asc' }}')" class="flex items-center justify-center hover:text-blue-600">
+                    <a href="javascript:void(0)" onclick="sortTable('percentage')" class="flex items-center justify-center hover:text-blue-600">
                         Persentase Kehadiran
                         @if($sortBy == 'percentage')
                             <span class="ml-1">{{ $sortDirection == 'asc' ? '↑' : '↓' }}</span>

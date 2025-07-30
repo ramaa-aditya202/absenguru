@@ -115,6 +115,25 @@ class ReportController extends Controller
         }
 
         // Sorting untuk tabel persentase kehadiran
+        if ($request->filled('sort_stats')) {
+            $sortField = $request->sort_stats;
+            $sortDirection = $request->get('sort_direction', 'asc');
+            
+            usort($teacherAttendanceStats, function($a, $b) use ($sortField, $sortDirection) {
+                $aValue = $a[$sortField];
+                $bValue = $b[$sortField];
+                
+                if ($sortField === 'name') {
+                    $result = strcasecmp($aValue, $bValue);
+                } else {
+                    $result = $aValue <=> $bValue;
+                }
+                
+                return $sortDirection === 'desc' ? -$result : $result;
+            });
+        }
+
+        // Sorting untuk tabel persentase kehadiran
         $sortBy = $request->get('sort_stats', 'name');
         $sortDirection = $request->get('sort_direction', 'asc');
         

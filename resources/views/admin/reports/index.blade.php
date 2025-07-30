@@ -1,7 +1,10 @@
 {{-- resources/views/admin/reports/index.blade.php --}}
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+    <x-slot name="hea                    {{-- Tabel Persentase Kehadiran per Guru --}}
+                    @if(!empty($teacherAttendanceStats))
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 mt-8">Persentase Kehadiran per Guru</h3>
+                    <div class="overflow-x-auto mb-6">
+                        <table class="min-w-full bg-white border" id="teacherStatsTable">  <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Laporan Absensi Guru') }}
         </h2>
     </x-slot>
@@ -93,8 +96,100 @@
                     {{-- Tabel Persentase Kehadiran per Guru --}}
                     @if(!empty($teacherAttendanceStats))
                     <h3 class="text-lg font-medium text-gray-900 mb-2 mt-8">Persentase Kehadiran per Guru</h3>
-                    <div id="teacher-stats-table-container">
-                        @include('admin.reports.partials.teacher-stats-table', compact('teacherAttendanceStats', 'sortBy', 'sortDirection'))
+                    @if(request('sort_stats'))
+                        <p class="text-sm text-gray-600 mb-4">
+                            Diurutkan berdasarkan: <strong>{{ ucfirst(str_replace('_', ' ', request('sort_stats'))) }}</strong> 
+                            ({{ request('sort_direction') == 'asc' ? 'Ascending' : 'Descending' }})
+                            <a href="{{ route('admin.reports.index', array_diff_key(request()->all(), ['sort_stats' => '', 'sort_direction' => ''])) }}" class="ml-2 text-blue-600 hover:text-blue-800">Reset Sorting</a>
+                        </p>
+                    @endif
+                    <div class="overflow-x-auto mb-6">
+                        <table class="min-w-full bg-white border">
+                            <thead class="bg-gray-200">
+                                <tr>
+                                    <th class="py-2 px-4 border-b text-left cursor-pointer hover:bg-gray-300 transition-colors" data-sort="name">
+                                        <div class="flex items-center">
+                                            Nama Guru
+                                            <span class="sort-icon ml-1">↕️</span>
+                                        </div>
+                                    </th>
+                                    <th class="py-2 px-4 border-b text-center cursor-pointer hover:bg-gray-300 transition-colors" data-sort="hadir">
+                                        <div class="flex items-center justify-center">
+                                            Hadir
+                                            <span class="sort-icon ml-1">↕️</span>
+                                        </div>
+                                    </th>
+                                    <th class="py-2 px-4 border-b text-center cursor-pointer hover:bg-gray-300 transition-colors" data-sort="sakit">
+                                        <div class="flex items-center justify-center">
+                                            Sakit
+                                            <span class="sort-icon ml-1">↕️</span>
+                                        </div>
+                                    </th>
+                                    <th class="py-2 px-4 border-b text-center cursor-pointer hover:bg-gray-300 transition-colors" data-sort="izin">
+                                        <div class="flex items-center justify-center">
+                                            Izin
+                                            <span class="sort-icon ml-1">↕️</span>
+                                        </div>
+                                    </th>
+                                    <th class="py-2 px-4 border-b text-center cursor-pointer hover:bg-gray-300 transition-colors" data-sort="alpa">
+                                        <div class="flex items-center justify-center">
+                                            Alpa
+                                            <span class="sort-icon ml-1">↕️</span>
+                                        </div>
+                                    </th>
+                                    <th class="py-2 px-4 border-b text-center cursor-pointer hover:bg-gray-300 transition-colors" data-sort="total">
+                                        <div class="flex items-center justify-center">
+                                            Total Absensi
+                                            <span class="sort-icon ml-1">↕️</span>
+                                        </div>
+                                    </th>
+                                    <th class="py-2 px-4 border-b text-center cursor-pointer hover:bg-gray-300 transition-colors" data-sort="percentage">
+                                        <div class="flex items-center justify-center">
+                                            Persentase Kehadiran
+                                            <span class="sort-icon ml-1">↕️</span>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($teacherAttendanceStats as $stat)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="py-2 px-4 border-b font-medium">{{ $stat['name'] }}</td>
+                                        <td class="py-2 px-4 border-b text-center">
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                                                {{ $stat['hadir'] }}
+                                            </span>
+                                        </td>
+                                        <td class="py-2 px-4 border-b text-center">
+                                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+                                                {{ $stat['sakit'] }}
+                                            </span>
+                                        </td>
+                                        <td class="py-2 px-4 border-b text-center">
+                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                                                {{ $stat['izin'] }}
+                                            </span>
+                                        </td>
+                                        <td class="py-2 px-4 border-b text-center">
+                                            <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
+                                                {{ $stat['alpa'] }}
+                                            </span>
+                                        </td>
+                                        <td class="py-2 px-4 border-b text-center font-medium">{{ $stat['total'] }}</td>
+                                        <td class="py-2 px-4 border-b text-center">
+                                            <span class="px-2 py-1 rounded-full text-sm font-medium
+                                                @if($stat['percentage'] >= 90) bg-green-100 text-green-800
+                                                @elseif($stat['percentage'] >= 80) bg-yellow-100 text-yellow-800
+                                                @elseif($stat['percentage'] >= 70) bg-orange-100 text-orange-800
+                                                @else bg-red-100 text-red-800
+                                                @endif">
+                                                {{ $stat['percentage'] }}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                     @endif
 
@@ -169,14 +264,15 @@
         </div>
     </div>
 
-    {{-- Script untuk Chart.js --}}
+    {{-- Script untuk Chart.js dan Table Sorting --}}
     @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const chartData = @json($chartData);
+            const teacherStatsData = @json($teacherAttendanceStats);
 
-            // Cek jika tidak ada data untuk ditampilkan
+            // Chart.js code
             if (chartData.labels.length === 0) {
                 const canvas = document.getElementById('attendanceChart');
                 canvas.style.display = 'none';
@@ -184,125 +280,173 @@
                 noDataMessage.textContent = 'Tidak ada data untuk ditampilkan pada rentang tanggal yang dipilih.';
                 noDataMessage.className = 'text-center text-gray-500 py-16';
                 canvas.parentNode.appendChild(noDataMessage);
-                return;
+            } else {
+                const ctx = document.getElementById('attendanceChart').getContext('2d');
+                const attendanceChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: chartData.labels,
+                        datasets: [
+                            {
+                                label: 'Hadir',
+                                data: chartData.datasets.hadir,
+                                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Sakit',
+                                data: chartData.datasets.sakit,
+                                backgroundColor: 'rgba(255, 206, 86, 0.6)',
+                                borderColor: 'rgba(255, 206, 86, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Izin',
+                                data: chartData.datasets.izin,
+                                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Alpa',
+                                data: chartData.datasets.alpa,
+                                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 }
+                            },
+                            x: { stacked: false }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Jumlah Kehadiran per Guru'
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false
+                            }
+                        }
+                    }
+                });
             }
 
-            const ctx = document.getElementById('attendanceChart').getContext('2d');
-            const attendanceChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: chartData.labels,
-                    datasets: [
-                        {
-                            label: 'Hadir',
-                            data: chartData.datasets.hadir,
-                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Sakit',
-                            data: chartData.datasets.sakit,
-                            backgroundColor: 'rgba(255, 206, 86, 0.6)',
-                            borderColor: 'rgba(255, 206, 86, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Izin',
-                            data: chartData.datasets.izin,
-                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Alpa',
-                            data: chartData.datasets.alpa,
-                            backgroundColor: 'rgba(255, 99, 132, 0.6)',
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { precision: 0 }
-                        },
-                        x: { stacked: false }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Jumlah Kehadiran per Guru'
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false
-                        }
-                    }
+            // Table sorting functionality
+            let currentSort = { field: null, direction: 'asc' };
+            let originalData = [...teacherStatsData];
+
+            function getPercentageClass(percentage) {
+                if (percentage >= 90) return 'bg-green-100 text-green-800';
+                if (percentage >= 80) return 'bg-yellow-100 text-yellow-800';
+                if (percentage >= 70) return 'bg-orange-100 text-orange-800';
+                return 'bg-red-100 text-red-800';
+            }
+
+            function renderTable(data) {
+                const tbody = document.getElementById('teacherStatsBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = data.map(stat => `
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-2 px-4 border-b font-medium">${stat.name}</td>
+                        <td class="py-2 px-4 border-b text-center">
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                                ${stat.hadir}
+                            </span>
+                        </td>
+                        <td class="py-2 px-4 border-b text-center">
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+                                ${stat.sakit}
+                            </span>
+                        </td>
+                        <td class="py-2 px-4 border-b text-center">
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                                ${stat.izin}
+                            </span>
+                        </td>
+                        <td class="py-2 px-4 border-b text-center">
+                            <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
+                                ${stat.alpa}
+                            </span>
+                        </td>
+                        <td class="py-2 px-4 border-b text-center">${stat.total}</td>
+                        <td class="py-2 px-4 border-b text-center">
+                            <span class="px-2 py-1 rounded-full text-sm font-medium ${getPercentageClass(stat.percentage)}">
+                                ${stat.percentage}%
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            function sortTable(field) {
+                if (currentSort.field === field) {
+                    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort.field = field;
+                    currentSort.direction = 'asc';
                 }
+
+                const sortedData = [...originalData].sort((a, b) => {
+                    let aValue = a[field];
+                    let bValue = b[field];
+
+                    if (field === 'name') {
+                        aValue = aValue.toLowerCase();
+                        bValue = bValue.toLowerCase();
+                        return currentSort.direction === 'asc' 
+                            ? aValue.localeCompare(bValue)
+                            : bValue.localeCompare(aValue);
+                    } else {
+                        return currentSort.direction === 'asc' 
+                            ? aValue - bValue 
+                            : bValue - aValue;
+                    }
+                });
+
+                renderTable(sortedData);
+                updateSortIcons();
+            }
+
+            function updateSortIcons() {
+                document.querySelectorAll('[data-sort]').forEach(header => {
+                    const field = header.getAttribute('data-sort');
+                    const icon = header.querySelector('.sort-icon');
+                    
+                    if (currentSort.field === field) {
+                        icon.textContent = currentSort.direction === 'asc' ? '↑' : '↓';
+                        header.classList.add('bg-gray-300');
+                    } else {
+                        icon.textContent = '↕️';
+                        header.classList.remove('bg-gray-300');
+                    }
+                });
+            }
+
+            // Add click event listeners to sortable headers
+            document.querySelectorAll('[data-sort]').forEach(header => {
+                header.addEventListener('click', function() {
+                    const field = this.getAttribute('data-sort');
+                    sortTable(field);
+                    
+                    // Scroll to table smoothly
+                    document.getElementById('teacherStatsTable').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                });
             });
         });
-    </script>
-    
-    <script>
-        // AJAX Sorting untuk tabel teacher stats
-        function sortTable(sortBy, sortDirection) {
-            // Tambahkan loading indicator
-            const container = document.getElementById('teacher-stats-table-container');
-            container.style.opacity = '0.5';
-            
-            // Ambil parameter filter yang sudah ada
-            const formData = new FormData();
-            const form = document.getElementById('filter-form');
-            
-            // Dapatkan semua input dari form filter
-            const inputs = form.querySelectorAll('input, select');
-            inputs.forEach(input => {
-                if (input.type === 'checkbox') {
-                    if (input.checked) {
-                        formData.append(input.name, input.value);
-                    }
-                } else if (input.value) {
-                    formData.append(input.name, input.value);
-                }
-            });
-            
-            // Tambahkan parameter sorting
-            formData.append('sort_stats', sortBy);
-            formData.append('sort_direction', sortDirection);
-            formData.append('ajax', '1');
-            
-            // Kirim AJAX request
-            fetch('{{ route("admin.reports.index") }}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update tabel tanpa reload halaman
-                    container.innerHTML = data.html;
-                }
-                container.style.opacity = '1';
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                container.style.opacity = '1';
-            });
-        }
-        
-        function resetSorting() {
-            // Reset ke tanpa sorting
-            sortTable('', '');
-        }
     </script>
     @endpush
 </x-app-layout>
