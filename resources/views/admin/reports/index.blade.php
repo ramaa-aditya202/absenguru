@@ -1,10 +1,7 @@
 {{-- resources/views/admin/reports/index.blade.php --}}
 <x-app-layout>
-    <x-slot name="hea                    {{-- Tabel Persentase Kehadiran per Guru --}}
-                    @if(!empty($teacherAttendanceStats))
-                    <h3 class="text-lg font-medium text-gray-900 mb-4 mt-8">Persentase Kehadiran per Guru</h3>
-                    <div class="overflow-x-auto mb-6">
-                        <table class="min-w-full bg-white border" id="teacherStatsTable">  <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Laporan Absensi Guru') }}
         </h2>
     </x-slot>
@@ -151,7 +148,7 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="teacherStatsBody">
                                 @foreach($teacherAttendanceStats as $stat)
                                     <tr class="hover:bg-gray-50">
                                         <td class="py-2 px-4 border-b font-medium">{{ $stat['name'] }}</td>
