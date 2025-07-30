@@ -93,142 +93,8 @@
                     {{-- Tabel Persentase Kehadiran per Guru --}}
                     @if(!empty($teacherAttendanceStats))
                     <h3 class="text-lg font-medium text-gray-900 mb-2 mt-8">Persentase Kehadiran per Guru</h3>
-                    @if(request('sort_stats'))
-                        <p class="text-sm text-gray-600 mb-4">
-                            Diurutkan berdasarkan: <strong>{{ ucfirst(str_replace('_', ' ', request('sort_stats'))) }}</strong> 
-                            ({{ request('sort_direction') == 'asc' ? 'Ascending' : 'Descending' }})
-                            <a href="{{ route('admin.reports.index', array_diff_key(request()->all(), ['sort_stats' => '', 'sort_direction' => ''])) }}" class="ml-2 text-blue-600 hover:text-blue-800">Reset Sorting</a>
-                        </p>
-                    @endif
-                    <div class="overflow-x-auto mb-6">
-                        <table class="min-w-full bg-white border">
-                            <thead class="bg-gray-200">
-                                <tr>
-                                    <th class="py-2 px-4 border-b text-left">
-                                        <a href="{{ route('admin.reports.index', array_merge(request()->all(), ['sort_stats' => 'name', 'sort_direction' => (request('sort_stats') == 'name' && request('sort_direction') == 'asc') ? 'desc' : 'asc'])) }}" class="flex items-center hover:text-blue-600">
-                                            Nama Guru
-                                            @if(request('sort_stats') == 'name')
-                                                @if(request('sort_direction') == 'asc')
-                                                    <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-                                                @else
-                                                    <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/></svg>
-                                                @endif
-                                            @endif
-                                        </a>
-                                    </th>
-                                    <th class="py-2 px-4 border-b text-center">
-                                        <a href="{{ route('admin.reports.index', array_merge(request()->all(), ['sort_stats' => 'hadir', 'sort_direction' => (request('sort_stats') == 'hadir' && request('sort_direction') == 'asc') ? 'desc' : 'asc'])) }}" class="flex items-center justify-center hover:text-blue-600">
-                                            Hadir
-                                            @if(request('sort_stats') == 'hadir')
-                                                @if(request('sort_direction') == 'asc')
-                                                    <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-                                                @else
-                                                    <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/></svg>
-                                                @endif
-                                            @endif
-                                        </a>
-                                    </th>
-                                    <th class="py-2 px-4 border-b text-center">
-                                        <a href="{{ route('admin.reports.index', array_merge(request()->all(), ['sort_stats' => 'sakit', 'sort_direction' => (request('sort_stats') == 'sakit' && request('sort_direction') == 'asc') ? 'desc' : 'asc'])) }}" class="flex items-center justify-center hover:text-blue-600">
-                                            Sakit
-                                            @if(request('sort_stats') == 'sakit')
-                                                @if(request('sort_direction') == 'asc')
-                                                    <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-                                                @else
-                                                    <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/></svg>
-                                                @endif
-                                            @endif
-                                        </a>
-                                    </th>
-                                    <th class="py-2 px-4 border-b text-center">
-                                        <a href="{{ route('admin.reports.index', array_merge(request()->all(), ['sort_stats' => 'izin', 'sort_direction' => (request('sort_stats') == 'izin' && request('sort_direction') == 'asc') ? 'desc' : 'asc'])) }}" class="flex items-center justify-center hover:text-blue-600">
-                                            Izin
-                                            @if(request('sort_stats') == 'izin')
-                                                @if(request('sort_direction') == 'asc')
-                                                    <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-                                                @else
-                                                    <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/></svg>
-                                                @endif
-                                            @endif
-                                        </a>
-                                    </th>
-                                    <th class="py-2 px-4 border-b text-center">
-                                        <a href="{{ route('admin.reports.index', array_merge(request()->all(), ['sort_stats' => 'alpa', 'sort_direction' => (request('sort_stats') == 'alpa' && request('sort_direction') == 'asc') ? 'desc' : 'asc'])) }}" class="flex items-center justify-center hover:text-blue-600">
-                                            Alpa
-                                            @if(request('sort_stats') == 'alpa')
-                                                @if(request('sort_direction') == 'asc')
-                                                    <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-                                                @else
-                                                    <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/></svg>
-                                                @endif
-                                            @endif
-                                        </a>
-                                    </th>
-                                    <th class="py-2 px-4 border-b text-center">
-                                        <a href="{{ route('admin.reports.index', array_merge(request()->all(), ['sort_stats' => 'total', 'sort_direction' => (request('sort_stats') == 'total' && request('sort_direction') == 'asc') ? 'desc' : 'asc'])) }}" class="flex items-center justify-center hover:text-blue-600">
-                                            Total Absensi
-                                            @if(request('sort_stats') == 'total')
-                                                @if(request('sort_direction') == 'asc')
-                                                    <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-                                                @else
-                                                    <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/></svg>
-                                                @endif
-                                            @endif
-                                        </a>
-                                    </th>
-                                    <th class="py-2 px-4 border-b text-center">
-                                        <a href="{{ route('admin.reports.index', array_merge(request()->all(), ['sort_stats' => 'percentage', 'sort_direction' => (request('sort_stats') == 'percentage' && request('sort_direction') == 'asc') ? 'desc' : 'asc'])) }}" class="flex items-center justify-center hover:text-blue-600">
-                                            Persentase Kehadiran
-                                            @if(request('sort_stats') == 'percentage')
-                                                @if(request('sort_direction') == 'asc')
-                                                    <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-                                                @else
-                                                    <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/></svg>
-                                                @endif
-                                            @endif
-                                        </a>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($teacherAttendanceStats as $stat)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="py-2 px-4 border-b font-medium">{{ $stat['name'] }}</td>
-                                        <td class="py-2 px-4 border-b text-center">
-                                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                                                {{ $stat['hadir'] }}
-                                            </span>
-                                        </td>
-                                        <td class="py-2 px-4 border-b text-center">
-                                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
-                                                {{ $stat['sakit'] }}
-                                            </span>
-                                        </td>
-                                        <td class="py-2 px-4 border-b text-center">
-                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                                                {{ $stat['izin'] }}
-                                            </span>
-                                        </td>
-                                        <td class="py-2 px-4 border-b text-center">
-                                            <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
-                                                {{ $stat['alpa'] }}
-                                            </span>
-                                        </td>
-                                        <td class="py-2 px-4 border-b text-center font-medium">{{ $stat['total'] }}</td>
-                                        <td class="py-2 px-4 border-b text-center">
-                                            <span class="px-2 py-1 rounded-full text-sm font-medium
-                                                @if($stat['percentage'] >= 90) bg-green-100 text-green-800
-                                                @elseif($stat['percentage'] >= 80) bg-yellow-100 text-yellow-800
-                                                @elseif($stat['percentage'] >= 70) bg-orange-100 text-orange-800
-                                                @else bg-red-100 text-red-800
-                                                @endif">
-                                                {{ $stat['percentage'] }}%
-                                            </span>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                    <div id="teacher-stats-table-container">
+                        @include('admin.reports.partials.teacher-stats-table', compact('teacherAttendanceStats', 'sortBy', 'sortDirection'))
                     </div>
                     @endif
 
@@ -380,6 +246,63 @@
                 }
             });
         });
+    </script>
+    
+    <script>
+        // AJAX Sorting untuk tabel teacher stats
+        function sortTable(sortBy, sortDirection) {
+            // Tambahkan loading indicator
+            const container = document.getElementById('teacher-stats-table-container');
+            container.style.opacity = '0.5';
+            
+            // Ambil parameter filter yang sudah ada
+            const formData = new FormData();
+            const form = document.getElementById('filter-form');
+            
+            // Dapatkan semua input dari form filter
+            const inputs = form.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    if (input.checked) {
+                        formData.append(input.name, input.value);
+                    }
+                } else if (input.value) {
+                    formData.append(input.name, input.value);
+                }
+            });
+            
+            // Tambahkan parameter sorting
+            formData.append('sort_stats', sortBy);
+            formData.append('sort_direction', sortDirection);
+            formData.append('ajax', '1');
+            
+            // Kirim AJAX request
+            fetch('{{ route("admin.reports.index") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update tabel tanpa reload halaman
+                    container.innerHTML = data.html;
+                }
+                container.style.opacity = '1';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                container.style.opacity = '1';
+            });
+        }
+        
+        function resetSorting() {
+            // Reset ke tanpa sorting
+            sortTable('', '');
+        }
     </script>
     @endpush
 </x-app-layout>

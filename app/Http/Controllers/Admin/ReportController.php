@@ -128,6 +128,14 @@ class ReportController extends Controller
         }
 
         // Kirim semua data ke view
+        if ($request->ajax() && $request->has('sort_stats')) {
+            // Jika ini adalah request AJAX untuk sorting, hanya kirim data tabel
+            return response()->json([
+                'success' => true,
+                'html' => view('admin.reports.partials.teacher-stats-table', compact('teacherAttendanceStats', 'sortBy', 'sortDirection'))->render()
+            ]);
+        }
+        
         return view('admin.reports.index', compact('teachers', 'attendances', 'summary', 'chartData', 'teacherAttendanceStats', 'sortBy', 'sortDirection'));
     }
 }
