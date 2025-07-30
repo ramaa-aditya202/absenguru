@@ -65,8 +65,15 @@ class ReportController extends Controller
         // Ambil data detail absensi dengan paginasi
         $attendances = $query->latest('attendance_date')->paginate(15);
 
-        // --- Proses data untuk grafik dan statistik guru (TANPA filter status) ---
-        // Query terpisah untuk statistik guru yang tidak terpengaruh filter status
+        // --- Proses data untuk grafik dan statistik guru ---
+        // Ambil daftar guru yang akan ditampilkan berdasarkan filter
+        $teachersQuery = User::where('role', 'guru');
+        if ($request->filled('user_id')) {
+            $teachersQuery->where('id', $request->user_id);
+        }
+        $selectedTeachers = $teachersQuery->orderBy('name')->get();
+        
+        // Query untuk data absensi guru (dengan filter tanggal, tetapi TIDAK filter status)
         $statsQuery = Attendance::join('users', 'attendances.user_id', '=', 'users.id')
             ->select('users.name as teacher_name', 'attendances.status', DB::raw('count(*) as total'))
             ->where('users.role', 'guru');
@@ -78,14 +85,17 @@ class ReportController extends Controller
         if ($request->filled('end_date')) {
             $statsQuery->whereDate('attendances.attendance_date', '<=', $request->end_date);
         }
-        // Terapkan filter guru jika ada
+        // Filter guru jika ada
         if ($request->filled('user_id')) {
             $statsQuery->where('attendances.user_id', $request->user_id);
         }
         // TIDAK menerapkan filter status untuk statistik yang akurat
 
         $attendanceData = $statsQuery->groupBy('users.name', 'attendances.status')->get();
-        $teacherNames = $attendanceData->pluck('teacher_name')->unique()->values();
+        
+        // Gunakan nama guru dari daftar guru yang dipilih, bukan hanya dari data absensi
+        $teacherNames = $selectedTeachers->pluck('name');
+        
         $chartData = [
             'labels' => $teacherNames,
             'datasets' => [
@@ -109,7 +119,7 @@ class ReportController extends Controller
             $sakitCount = $attendanceData->where('teacher_name', $teacher)->where('status', 'sakit')->first()->total ?? 0;
             $izinCount = $attendanceData->where('teacher_name', $teacher)->where('status', 'izin')->first()->total ?? 0;
             $alpaCount = $attendanceData->where('teacher_name', $teacher)->where('status', 'alpa')->first()->total ?? 0;
-            $totalCount = $attendanceData->where('teacher_name', $teacher)->sum('total');
+            $totalCount = $hadirCount + $sakitCount + $izinCount + $alpaCount;
             
             $percentage = $totalCount > 0 ? round(($hadirCount / $totalCount) * 100, 1) : 0;
             
