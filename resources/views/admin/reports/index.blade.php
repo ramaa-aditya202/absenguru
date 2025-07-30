@@ -37,6 +37,7 @@
                             {{-- Filter Status --}}
                             <div>
                                 <x-input-label :value="__('Status')" />
+                                <p class="text-xs text-gray-500 mt-1 mb-2">Filter ini hanya mempengaruhi tabel detail absensi. Statistik dan grafik tetap menampilkan data lengkap untuk perhitungan persentase yang akurat.</p>
                                 <div class="mt-1 space-y-2">
                                     @php
                                         $statuses = ['hadir' => 'Hadir', 'sakit' => 'Sakit', 'izin' => 'Izin', 'alpa' => 'Alpa'];
