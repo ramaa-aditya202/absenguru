@@ -71,35 +71,21 @@
                 <div class="p-6 text-gray-900">
                     {{-- Tabel Rekapitulasi --}}
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Rekapitulasi</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-center">
-                        <div class="p-4 bg-green-100 rounded-lg">
-                            <div class="text-3xl font-bold text-green-800">{{ $summary['hadir'] ?? 0 }}</div>
-                            <div class="text-sm text-green-600">Hadir</div>
-                        </div>
-                        <div class="p-4 bg-yellow-100 rounded-lg">
-                            <div class="text-3xl font-bold text-yellow-800">{{ $summary['sakit'] ?? 0 }}</div>
-                            <div class="text-sm text-yellow-600">Sakit</div>
-                        </div>
-                        <div class="p-4 bg-blue-100 rounded-lg">
-                            <div class="text-3xl font-bold text-blue-800">{{ $summary['izin'] ?? 0 }}</div>
-                            <div class="text-sm text-blue-600">Izin</div>
-                        </div>
-                        <div class="p-4 bg-red-100 rounded-lg">
-                            <div class="text-3xl font-bold text-red-800">{{ $summary['alpa'] ?? 0 }}</div>
-                            <div class="text-sm text-red-600">Alpa</div>
-                        </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-center" id="summary-container">
+                        @include('admin.reports.partials.summary-cards', ['summary' => $summary])
                     </div>
 
                     {{-- Tabel Persentase Kehadiran per Guru --}}
-                    @if(!empty($teacherAttendanceStats))
-                    <h3 class="text-lg font-medium text-gray-900 mb-2 mt-8">Persentase Kehadiran per Guru</h3>
-                    @if(request('sort_stats'))
-                        <p class="text-sm text-gray-600 mb-4">
-                            Diurutkan berdasarkan: <strong>{{ ucfirst(str_replace('_', ' ', request('sort_stats'))) }}</strong> 
-                            ({{ request('sort_direction') == 'asc' ? 'Ascending' : 'Descending' }})
-                            <a href="{{ route('admin.reports.index', array_diff_key(request()->all(), ['sort_stats' => '', 'sort_direction' => ''])) }}" class="ml-2 text-blue-600 hover:text-blue-800">Reset Sorting</a>
-                        </p>
-                    @endif
+                    <div id="teacher-stats-container">
+                        @if(!empty($teacherAttendanceStats))
+                        <h3 class="text-lg font-medium text-gray-900 mb-2 mt-8">Persentase Kehadiran per Guru</h3>
+                        @if(request('sort_stats'))
+                            <p class="text-sm text-gray-600 mb-4">
+                                Diurutkan berdasarkan: <strong>{{ ucfirst(str_replace('_', ' ', request('sort_stats'))) }}</strong> 
+                                ({{ request('sort_direction') == 'asc' ? 'Ascending' : 'Descending' }})
+                                <a href="{{ route('admin.reports.index', array_diff_key(request()->all(), ['sort_stats' => '', 'sort_direction' => ''])) }}" class="ml-2 text-blue-600 hover:text-blue-800">Reset Sorting</a>
+                            </p>
+                        @endif
                     <div class="overflow-x-auto mb-6">
                         <table class="min-w-full bg-white border">
                             <thead class="bg-gray-200">
@@ -189,53 +175,12 @@
                         </table>
                     </div>
                     @endif
+                    </div>
 
                     {{-- Tabel Detail Laporan --}}
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Detail Absensi</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white border">
-                            <thead class="bg-gray-200">
-                                <tr>
-                                    <th class="py-2 px-4 border-b">Tanggal</th>
-                                    <th class="py-2 px-4 border-b">Guru</th>
-                                    <th class="py-2 px-4 border-b">Status</th>
-                                    <th class="py-2 px-4 border-b">Keterangan</th>
-                                    <th class="py-2 px-4 border-b">Diabsen oleh</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($attendances as $attendance)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="py-2 px-4 border-b">{{ \Carbon\Carbon::parse($attendance->attendance_date)->translatedFormat('d F Y') }}</td>
-                                        <td class="py-2 px-4 border-b">{{ $attendance->user->name }}</td>
-                                        <td class="py-2 px-4 border-b text-center">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                @switch($attendance->status)
-                                                    @case('hadir') bg-green-100 text-green-800 @break
-                                                    @case('sakit') bg-yellow-100 text-yellow-800 @break
-                                                    @case('izin') bg-blue-100 text-blue-800 @break
-                                                    @case('alpa') bg-red-100 text-red-800 @break
-                                                @endswitch">
-                                                {{ ucfirst($attendance->status) }}
-                                            </span>
-                                        </td>
-                                        <td class="py-2 px-4 border-b">{{ $attendance->remarks }}</td>
-                                        <td class="py-2 px-4 border-b">{{ $attendance->recorder->name }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="py-4 px-4 border-b text-center text-gray-500">
-                                            Tidak ada data absensi yang cocok dengan filter yang diterapkan.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {{-- Link Paginasi --}}
-                    <div class="mt-4">
-                        {{ $attendances->withQueryString()->links() }}
+                    <div class="overflow-x-auto" id="attendance-table-container">
+                        @include('admin.reports.partials.attendance-table', ['attendances' => $attendances])
                     </div>
                 </div>
             </div>
@@ -443,6 +388,167 @@
                     });
                 });
             });
+
+            // AJAX Filter and Pagination functionality
+            function loadReportData(url, scrollToElement = null) {
+                // Show loading state
+                showLoadingState();
+
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update attendance table
+                        if (data.data.attendances_html) {
+                            document.getElementById('attendance-table-container').innerHTML = data.data.attendances_html;
+                            setupPaginationListeners();
+                        }
+
+                        // Update summary
+                        if (data.data.summary_html) {
+                            document.getElementById('summary-container').innerHTML = data.data.summary_html;
+                        }
+
+                        // Update chart
+                        if (data.data.chartData && window.attendanceChart) {
+                            updateChart(data.data.chartData);
+                        }
+
+                        // Update teacher stats table
+                        if (data.data.teacherAttendanceStats) {
+                            updateTeacherStats(data.data.teacherAttendanceStats);
+                        }
+
+                        // Scroll to element if specified
+                        if (scrollToElement) {
+                            document.getElementById(scrollToElement).scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    // Hide loading state
+                    hideLoadingState();
+                });
+            }
+
+            function showLoadingState() {
+                // Add loading overlay or spinner
+                const containers = ['attendance-table-container', 'summary-container', 'teacher-stats-container'];
+                containers.forEach(containerId => {
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        container.style.opacity = '0.5';
+                        container.style.pointerEvents = 'none';
+                    }
+                });
+            }
+
+            function hideLoadingState() {
+                // Remove loading overlay or spinner
+                const containers = ['attendance-table-container', 'summary-container', 'teacher-stats-container'];
+                containers.forEach(containerId => {
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        container.style.opacity = '1';
+                        container.style.pointerEvents = 'auto';
+                    }
+                });
+            }
+
+            function updateChart(chartData) {
+                if (window.attendanceChart) {
+                    window.attendanceChart.data.labels = chartData.labels;
+                    window.attendanceChart.data.datasets[0].data = chartData.datasets.hadir;
+                    window.attendanceChart.data.datasets[1].data = chartData.datasets.sakit;
+                    window.attendanceChart.data.datasets[2].data = chartData.datasets.izin;
+                    window.attendanceChart.data.datasets[3].data = chartData.datasets.alpa;
+                    window.attendanceChart.update();
+                }
+            }
+
+            function updateTeacherStats(teacherStats) {
+                // Update the original data for sorting
+                originalData = [...teacherStats];
+                // Re-render the table with new data
+                renderTable(teacherStats);
+            }
+
+            function setupPaginationListeners() {
+                // Setup pagination links to use AJAX
+                document.querySelectorAll('#pagination-container a').forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const url = this.href;
+                        loadReportData(url, 'attendance-table-container');
+                    });
+                });
+            }
+
+            function setupFilterListeners() {
+                // Setup form submission to use AJAX
+                const filterForm = document.querySelector('form[action*="reports"]');
+                if (filterForm) {
+                    filterForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        const url = new URL(this.action);
+                        
+                        // Clear existing params
+                        url.search = '';
+                        
+                        // Add form data to URL
+                        formData.forEach((value, key) => {
+                            if (value) {
+                                url.searchParams.append(key, value);
+                            }
+                        });
+                        
+                        loadReportData(url.toString());
+                    });
+
+                    // Setup checkbox change events for real-time filtering
+                    const statusCheckboxes = filterForm.querySelectorAll('input[name="status[]"]');
+                    let filterTimeout;
+                    statusCheckboxes.forEach(checkbox => {
+                        checkbox.addEventListener('change', function() {
+                            // Small delay to allow multiple checkboxes to be changed
+                            clearTimeout(filterTimeout);
+                            filterTimeout = setTimeout(() => {
+                                filterForm.dispatchEvent(new Event('submit'));
+                            }, 300);
+                        });
+                    });
+
+                    // Setup other input change events
+                    const otherInputs = filterForm.querySelectorAll('input[type="date"], select');
+                    otherInputs.forEach(input => {
+                        input.addEventListener('change', function() {
+                            filterForm.dispatchEvent(new Event('submit'));
+                        });
+                    });
+                }
+            }
+
+            // Initialize listeners
+            setupPaginationListeners();
+            setupFilterListeners();
+
+            // Store chart reference globally for updates
+            if (typeof attendanceChart !== 'undefined') {
+                window.attendanceChart = attendanceChart;
+            }
         });
     </script>
     @endpush

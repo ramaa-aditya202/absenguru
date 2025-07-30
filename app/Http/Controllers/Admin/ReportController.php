@@ -157,12 +157,26 @@ class ReportController extends Controller
         }
 
         // Kirim semua data ke view
-        if ($request->ajax() && $request->has('sort_stats')) {
-            // Jika ini adalah request AJAX untuk sorting, hanya kirim data tabel
-            return response()->json([
-                'success' => true,
-                'html' => view('admin.reports.partials.teacher-stats-table', compact('teacherAttendanceStats', 'sortBy', 'sortDirection'))->render()
-            ]);
+        if ($request->ajax()) {
+            if ($request->has('sort_stats')) {
+                // Request AJAX untuk sorting tabel statistik guru
+                return response()->json([
+                    'success' => true,
+                    'html' => view('admin.reports.partials.teacher-stats-table', compact('teacherAttendanceStats', 'sortBy', 'sortDirection'))->render()
+                ]);
+            } else {
+                // Request AJAX untuk pagination atau filter detail absensi
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'attendances_html' => view('admin.reports.partials.attendance-table', compact('attendances'))->render(),
+                        'summary_html' => view('admin.reports.partials.summary-cards', compact('summary'))->render(),
+                        'summary' => $summary,
+                        'chartData' => $chartData,
+                        'teacherAttendanceStats' => $teacherAttendanceStats
+                    ]
+                ]);
+            }
         }
         
         return view('admin.reports.index', compact('teachers', 'attendances', 'summary', 'chartData', 'teacherAttendanceStats', 'sortBy', 'sortDirection'));
