@@ -17,8 +17,8 @@ class TeacherController extends Controller
      */
     public function index()
     {
-        // Ambil semua user dengan role 'guru' atau 'admin'
-        $teachers = User::whereIn('role', ['guru', 'admin'])->latest()->paginate(10);
+        // Ambil semua user dengan role 'guru', 'admin', atau 'piket'
+        $teachers = User::whereIn('role', ['guru', 'admin', 'piket'])->latest()->paginate(10);
         return view('admin.teachers.index', compact('teachers'));
     }
 
@@ -42,7 +42,7 @@ class TeacherController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
-            'role' => ['required', 'in:admin,guru'],
+            'role' => ['required', 'in:admin,guru,piket'],
         ]);
 
         // Buat user baru
@@ -76,7 +76,7 @@ class TeacherController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($teacher->id)],
             'password' => ['nullable', 'string', 'min:8'], // Password opsional
-            'role' => ['required', 'in:admin,guru'],
+            'role' => ['required', 'in:admin,guru,piket'],
         ]);
 
         // Siapkan data untuk diupdate

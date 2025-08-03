@@ -13,6 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
         	'admin' => \App\Http\Middleware\IsAdmin::class,
+        	'piket' => \App\Http\Middleware\IsPiket::class,
+        	'admin-or-piket' => \App\Http\Middleware\IsAdminOrPiket::class,
     	]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

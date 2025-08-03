@@ -25,8 +25,8 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Tampilan untuk Admin
-        if ($user->role === 'admin') {
+        // Tampilan untuk Admin dan Piket
+        if (in_array($user->role, ['admin', 'piket'])) {
             // 1. Ambil semua data master untuk dropdown filter
             $filterData = [
                 'teachers' => User::where('role', 'guru')->orderBy('name')->get(),

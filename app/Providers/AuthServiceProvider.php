@@ -25,9 +25,9 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
 
         // Definisikan Gate di sini
-        // Gate ini akan mengembalikan true jika role user adalah 'admin'
+        // Gate ini akan mengembalikan true jika role user adalah 'admin' atau 'piket'
         Gate::define('perform-attendance', function (User $user) {
-            return $user->role === 'admin';
+            return in_array($user->role, ['admin', 'piket']);
         });
     }
 }

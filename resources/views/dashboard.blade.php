@@ -1,6 +1,6 @@
 @php
-    // Fungsi helper untuk membuat link sorting, hanya didefinisikan jika user adalah admin
-    if (Auth::check() && Auth::user()->role == 'admin') {
+    // Fungsi helper untuk membuat link sorting, hanya didefinisikan jika user adalah admin atau piket
+    if (Auth::check() && in_array(Auth::user()->role, ['admin', 'piket'])) {
         function sortable_dashboard_link($column, $title, $currentSort, $currentDirection) {
             $newDirection = ($currentSort == $column && $currentDirection == 'asc') ? 'desc' : 'asc';
             // Gabungkan parameter filter yang ada dengan parameter sorting baru
@@ -16,7 +16,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            @if(Auth::user()->role == 'admin')
+            @if(in_array(Auth::user()->role, ['admin', 'piket']))
                 {{ __('Dashboard Absensi Guru') }}
             @else
                 {{ __('Dashboard Anda') }}
@@ -34,7 +34,7 @@
                         </div>
                     @endif
 
-                    @if(Auth::user()->role == 'admin')
+                    @if(in_array(Auth::user()->role, ['admin', 'piket']))
                         {{-- Tampilan untuk Pengguna Admin --}}
 
                         <!-- Panel Filter Lanjutan -->

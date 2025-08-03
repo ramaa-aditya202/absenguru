@@ -21,6 +21,12 @@ class UserSeeder extends Seeder // Deklarasi Class
             'role' => 'admin',
         ]);
         User::create([
+            'name' => 'Piket Guru',
+            'email' => 'piket@sekolah.com',
+            'password' => Hash::make('password'),
+            'role' => 'piket',
+        ]);
+        User::create([
             'name' => 'Budi Sudarsono',
             'email' => 'budi@sekolah.com',
             'password' => Hash::make('password'),

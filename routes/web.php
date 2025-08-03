@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ClassroomController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\BulkScheduleController;
+use App\Http\Controllers\Piket\PiketController;
 
 
 Route::get('/', function () {
@@ -36,9 +37,19 @@ Route::middleware('auth')->group(function () {
         Route::resource('subjects', SubjectController::class);
         Route::resource('classrooms', ClassroomController::class);
         Route::resource('schedules', ScheduleController::class);
-     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    });
 
+    // ROUTE UNTUK ADMIN DAN PIKET (akses report)
+    Route::middleware(['admin-or-piket'])->name('admin.')->prefix('admin')->group(function () {
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    });
 
+    // ROUTE KHUSUS PIKET (akses read-only ke data master)
+    Route::middleware(['piket'])->name('piket.')->prefix('piket')->group(function () {
+        Route::get('teachers', [PiketController::class, 'teachers'])->name('teachers.index');
+        Route::get('subjects', [PiketController::class, 'subjects'])->name('subjects.index');
+        Route::get('classrooms', [PiketController::class, 'classrooms'])->name('classrooms.index');
+        Route::get('schedules', [PiketController::class, 'schedules'])->name('schedules.index');
     });
 });
 
