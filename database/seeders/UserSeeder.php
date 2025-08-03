@@ -14,29 +14,41 @@ class UserSeeder extends Seeder // Deklarasi Class
      */
     public function run(): void
     {
-        User::create([
-            'name' => 'Admin Piket',
-            'email' => 'admin@sekolah.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-        ]);
-        User::create([
-            'name' => 'Piket Guru',
-            'email' => 'piket@sekolah.com',
-            'password' => Hash::make('password'),
-            'role' => 'piket',
-        ]);
-        User::create([
-            'name' => 'Budi Sudarsono',
-            'email' => 'budi@sekolah.com',
-            'password' => Hash::make('password'),
-            'role' => 'guru',
-        ]);
-        User::create([
-            'name' => 'Siti Aminah',
-            'email' => 'siti@sekolah.com',
-            'password' => Hash::make('password'),
-            'role' => 'guru',
-        ]);
+        // Menggunakan updateOrCreate untuk menghindari duplikasi
+        User::updateOrCreate(
+            ['email' => 'admin@sekolah.com'],
+            [
+                'name' => 'Admin Piket',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+            ]
+        );
+        
+        User::updateOrCreate(
+            ['email' => 'piket@sekolah.com'],
+            [
+                'name' => 'Piket Guru',
+                'password' => Hash::make('password'),
+                'role' => 'piket',
+            ]
+        );
+        
+        User::updateOrCreate(
+            ['email' => 'budi@sekolah.com'],
+            [
+                'name' => 'Budi Sudarsono',
+                'password' => Hash::make('password'),
+                'role' => 'guru',
+            ]
+        );
+        
+        User::updateOrCreate(
+            ['email' => 'siti@sekolah.com'],
+            [
+                'name' => 'Siti Aminah',
+                'password' => Hash::make('password'),
+                'role' => 'guru',
+            ]
+        );
     }
 }
