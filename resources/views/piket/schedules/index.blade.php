@@ -58,7 +58,7 @@
                                             {{ \Carbon\Carbon::parse($schedule->timeSlot->end_time)->format('H:i') }}
                                         </td>
                                         <td class="py-2 px-4 border-b">{{ $schedule->subject->name }}</td>
-                                        <td class="py-2 px-4 border-b">{{ $schedule->teacher->name }}</td>
+                                        <td class="py-2 px-4 border-b">{{ $schedule->user->name }}</td>
                                         <td class="py-2 px-4 border-b">{{ $schedule->classroom->name }}</td>
                                         <td class="py-2 px-4 border-b text-center">
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">

@@ -38,7 +38,7 @@ class PiketController extends Controller
 
     public function schedules()
     {
-        $schedules = Schedule::with(['subject', 'teacher', 'classroom', 'timeSlot'])
+        $schedules = Schedule::with(['subject', 'user', 'classroom', 'timeSlot'])
             ->orderBy('day_of_week')
             ->orderBy('time_slot_id')
             ->paginate(15);
