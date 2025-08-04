@@ -17,6 +17,29 @@
                 </div>
             @endif
 
+            <!-- Peringatan Keamanan Data -->
+            <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-blue-800">
+                            Perlindungan Data Absensi
+                        </h3>
+                        <div class="mt-2 text-sm text-blue-700">
+                            <p>
+                                ✅ <strong>Data absensi Anda aman!</strong> Sistem akan mempertahankan semua data absensi yang sudah ada.<br>
+                                ✅ Jadwal yang memiliki riwayat absensi akan diupdate tanpa menghapus data.<br>
+                                ✅ Hanya jadwal kosong (tanpa absensi) yang akan diganti sepenuhnya.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Filter Pemilihan Kelas -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 text-gray-900">
