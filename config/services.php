@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
@@ -35,4 +34,13 @@ return [
         ],
     ],
 
+    'sso' => [
+        'client_id' => env('SSO_CLIENT_ID'),
+        'client_secret' => env('SSO_CLIENT_SECRET'),
+        'redirect' => env('SSO_REDIRECT_URI'),
+        'base_url' => env('SSO_BASE_URL'),
+        'authorize_url' => env('SSO_AUTHORIZE_URL'),
+        'token_url' => env('SSO_TOKEN_URL'),
+        'user_url' => env('SSO_USER_URL'),
+    ],
 ];
